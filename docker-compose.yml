@@ -23,7 +23,7 @@ services:
       - GUACD_HOST=guacd
       - GUACD_PORT=4822
     volumes:
-      - remotely-data:/app/data
+      - ./server:/app/data
     depends_on:
       - guacd
 
@@ -38,6 +38,3 @@ services:
       - "80:80"
     depends_on:
       - server
-
-volumes:
-  remotely-data:
