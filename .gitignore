@@ -1,0 +1,20 @@
+# Dependency & Build directories
+node_modules
+dist
+.vite
+
+# Environment files (NEVER commit secrets to git)
+.env
+.env.local
+.env.*.local
+*.env
+
+# SQLite Databases & Storage
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# OS System files
+.DS_Store
+Thumbs.db

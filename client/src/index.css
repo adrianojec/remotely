@@ -1,0 +1,42 @@
+@import "tailwindcss";
+@import "@xterm/xterm/css/xterm.css";
+
+@layer base {
+  body {
+    background-color: #1e1e1e;
+    color: #cccccc;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+/* Custom Scrollbars - VS Code Dark Modern Style */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(30, 30, 30, 0.6);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(121, 121, 121, 0.4);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 100, 100, 0.7);
+}
+
+/* VS Code Glass & Panel helpers */
+.glass-panel {
+  background: rgba(37, 37, 38, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* XTerm Canvas Customization */
+.xterm-viewport {
+  border-radius: 0 0 0.5rem 0.5rem;
+}
+

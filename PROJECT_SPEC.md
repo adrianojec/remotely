@@ -10,13 +10,13 @@
   - Runtime: Node.js (TypeScript)
   - HTTP & WebSocket Framework: Hono (`@hono/node-server`, `@hono/node-ws`)
   - Remote Gateway & PTY: `ssh2`
-  - Database: SQLite (`better-sqlite3` or `prisma`)
+  - Database: SQLite (`better-sqlite3`)
   - Security: AES-256-GCM encryption for credentials at rest
 - **Frontend:**
   - Framework: React (Vite + TypeScript)
-  - UI Library: shadcn/ui (Tailwind CSS v4 + Lucide Icons + Radix UI)
+  - UI Components: Custom Tailwind CSS v4 components (`clsx` + `tailwind-merge` + `lucide-react`)
   - In-Browser Terminal: `@xterm/xterm`, `@xterm/addon-fit`, `@xterm/addon-web-links`
-  - State & Data Fetching: TanStack React Query + Axios / Fetch
+  - State & Data Fetching: React Hooks + Native `fetch` API
 
 ---
 
@@ -48,10 +48,11 @@
 
 ---
 
-## 3. UI Layout (shadcn/ui)
+## 3. UI Layout (Tailwind CSS)
 
-- **Sidebar:** Host list with status badges, connection status, quick search (`Command` palette).
+- **Sidebar:** Host list with status badges, connection status, quick search.
 - **Server View Tabs:**
   - **Containers:** `DataTable` displaying container state, port mappings, action dropdowns, and logs modal.
   - **Processes:** Process list for bare services.
   - **Terminal:** Full-screen responsive terminal interface.
+
