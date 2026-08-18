@@ -1,4 +1,4 @@
-import { Server, ServerGroup, DockerContainer, Pm2Process } from '../types';
+import { Server, ServerGroup, DockerContainer } from '../types';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
 
@@ -168,28 +168,3 @@ export async function fetchContainerLogs(serverId: string, containerId: string):
   return res.json();
 }
 
-export async function fetchPm2Processes(serverId: string): Promise<{
-  installed: boolean;
-  processes: Pm2Process[];
-  error?: string;
-}> {
-  const res = await fetch(`${API_BASE}/servers/${serverId}/processes`);
-  const data = await res.json();
-  if (!res.ok) {
-    throw new Error(data.message || 'Failed to fetch PM2 processes');
-  }
-  return data;
-}
-
-export async function pm2Action(
-  serverId: string,
-  pmId: number | string,
-  action: 'restart' | 'stop' | 'delete'
-): Promise<{ success: boolean; message: string }> {
-  const res = await fetch(`${API_BASE}/servers/${serverId}/action`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ pmId, action }),
-  });
-  return res.json();
-}

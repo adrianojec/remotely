@@ -6,7 +6,6 @@ import dotenv from 'dotenv';
 import { serversRouter } from './routes/servers.js';
 import { groupsRouter } from './routes/groups.js';
 import { dockerRouter } from './routes/docker.js';
-import { pm2Router } from './routes/pm2.js';
 import { handleTerminalWebSocket } from './routes/terminal.js';
 
 dotenv.config();
@@ -41,7 +40,6 @@ app.get(
 app.route('/api/groups', groupsRouter);
 app.route('/api/servers', serversRouter);
 app.route('/api/servers', dockerRouter);
-app.route('/api/servers', pm2Router);
 
 app.get('/api/health', (c) => {
   return c.json({ status: 'ok', timestamp: new Date().toISOString() });

@@ -11,7 +11,6 @@ import { MoveServerModal } from './components/group/MoveServerModal';
 import { ServerTabs } from './components/dashboard/ServerTabs';
 import { TerminalView } from './components/terminal/TerminalView';
 import { ContainersTable } from './components/docker/ContainersTable';
-import { ProcessesTable } from './components/processes/ProcessesTable';
 import { Server as ServerIcon, Plus } from 'lucide-react';
 
 export function App() {
@@ -149,9 +148,6 @@ export function App() {
                 {activeTab === 'containers' && (
                   <ContainersTable key={activeServer.id} server={activeServer} />
                 )}
-                {activeTab === 'processes' && (
-                  <ProcessesTable key={activeServer.id} server={activeServer} />
-                )}
               </div>
             </>
           ) : (
@@ -162,7 +158,7 @@ export function App() {
               </div>
               <h2 className="text-xl font-bold text-slate-100 mb-2">No Remote Server Selected</h2>
               <p className="text-xs text-slate-400 max-w-md mb-6 leading-relaxed">
-                Connect your Linux infrastructure securely over SSH. Manage containers, Node/PM2 processes, and open interactive terminal sessions directly from your browser.
+                Connect your Linux infrastructure securely over SSH. Manage Docker containers and open interactive terminal sessions directly from your browser.
               </p>
               <button
                 onClick={() => handleOpenAddServer(null)}

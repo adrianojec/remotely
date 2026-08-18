@@ -29,21 +29,5 @@ export interface DockerContainer {
   State: string;
 }
 
-export interface Pm2Process {
-  pid: number;
-  name: string;
-  pm_id: number;
-  monit: {
-    memory: number;
-    cpu: number;
-  };
-  pm2_env: {
-    status: string;
-    pm_uptime: number;
-    restart_time: number;
-    node_version: string;
-    script: string;
-  };
-}
+export type TabType = 'terminal' | 'containers';
 
-export type TabType = 'terminal' | 'containers' | 'processes';
