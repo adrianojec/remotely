@@ -26,9 +26,6 @@ export const AddServerModal: React.FC<AddServerModalProps> = ({
   const [credential, setCredential] = useState('');
   const [groupId, setGroupId] = useState<string | null>(defaultGroupId);
 
-  const [desktopProtocol, setDesktopProtocol] = useState<'rdp' | 'vnc'>('rdp');
-  const [desktopPort, setDesktopPort] = useState('3389');
-
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
 
@@ -87,8 +84,6 @@ export const AddServerModal: React.FC<AddServerModalProps> = ({
         authType,
         credential,
         groupId: groupId || null,
-        desktopProtocol,
-        desktopPort: parseInt(desktopPort, 10) || (desktopProtocol === 'vnc' ? 5900 : 3389),
       });
       onServerAdded(server);
       onClose();
@@ -100,37 +95,38 @@ export const AddServerModal: React.FC<AddServerModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-      <div className="bg-[#181818] border border-[#2b2b2b] rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
+      <div className="bg-[#141414] border border-[#2b2b2b] rounded-xl w-full max-w-xl shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-[#2b2b2b] flex items-center justify-between">
+        <div className="flex items-center justify-between p-4 border-b border-[#2b2b2b]">
           <div className="flex items-center gap-2">
             <Server className="w-5 h-5 text-sky-400" />
-            <h3 className="font-semibold text-slate-100 text-base">Add Remote Host</h3>
+            <h2 className="font-semibold text-slate-100 text-lg">Add New Server</h2>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-200 transition-colors p-1 rounded-lg hover:bg-zinc-800"
+            className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-zinc-800 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 text-xs">
+        {/* Body */}
+        <form onSubmit={handleSubmit} className="p-5 space-y-4">
           {error && (
-            <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-400 flex items-start gap-2">
-              <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+            <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-lg text-rose-400 text-xs flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 flex-shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
-          {/* Group Selector & Server Display Name */}
+          {/* Group selection */}
           <div className="grid grid-cols-3 gap-3">
             <div className="col-span-2">
-              <label className="block text-slate-300 font-medium mb-1">Server Display Name *</label>
+              <label className="block text-slate-300 font-medium mb-1">Server Name *</label>
               <input
                 type="text"
-                placeholder="e.g. Production Web-01"
+                placeholder="Production Web 01"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="w-full bg-[#1f1f1f] border border-zinc-800 rounded-lg px-3 py-2 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-sky-500"
@@ -139,8 +135,7 @@ export const AddServerModal: React.FC<AddServerModalProps> = ({
             </div>
             <div>
               <label className="block text-slate-300 font-medium mb-1 flex items-center gap-1">
-                <Folder className="w-3 h-3 text-sky-400" />
-                Group
+                <Folder className="w-3.5 h-3.5 text-slate-400" /> Group
               </label>
               <select
                 value={groupId || ''}
@@ -247,35 +242,6 @@ export const AddServerModal: React.FC<AddServerModalProps> = ({
                 required
               />
             )}
-          </div>
-
-          {/* Remote Desktop Settings */}
-          <div className="grid grid-cols-2 gap-3 pt-2 border-t border-zinc-800/80">
-            <div>
-              <label className="block text-slate-300 font-medium mb-1">GUI Desktop Protocol</label>
-              <select
-                value={desktopProtocol}
-                onChange={(e) => {
-                  const val = e.target.value as 'rdp' | 'vnc';
-                  setDesktopProtocol(val);
-                  setDesktopPort(val === 'vnc' ? '5900' : '3389');
-                }}
-                className="w-full bg-[#1f1f1f] border border-zinc-800 rounded-lg px-2.5 py-2 text-slate-200 focus:outline-none focus:border-sky-500"
-              >
-                <option value="rdp">RDP (Windows Remote Desktop)</option>
-                <option value="vnc">VNC (Linux Desktop / X11)</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-slate-300 font-medium mb-1">GUI Desktop Port</label>
-              <input
-                type="number"
-                value={desktopPort}
-                onChange={(e) => setDesktopPort(e.target.value)}
-                placeholder={desktopProtocol === 'vnc' ? '5900' : '3389'}
-                className="w-full bg-[#1f1f1f] border border-zinc-800 rounded-lg px-3 py-2 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-sky-500"
-              />
-            </div>
           </div>
 
           {/* Pre-flight test output */}

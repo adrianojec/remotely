@@ -26,7 +26,7 @@ export const Header: React.FC<HeaderProps> = ({ activeServer, onRefresh, isRefre
       </div>
 
       {activeServer ? (
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 bg-slate-950/50 border border-slate-800/80 px-3 py-1.5 rounded-lg text-xs">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
             <span className="text-slate-400 font-mono">Active Host:</span>

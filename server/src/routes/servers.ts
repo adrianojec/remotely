@@ -20,7 +20,7 @@ export function getServerCredentials(server: ServerRecord): SshCredentials {
 
 // GET all servers (sanitized: hides encrypted/plain credentials)
 serversRouter.get('/', (c) => {
-  const stmt = db.prepare('SELECT id, name, host, port, username, auth_type, group_id, desktop_protocol, desktop_port, desktop_width, desktop_height, created_at, updated_at FROM servers ORDER BY created_at DESC');
+  const stmt = db.prepare('SELECT id, name, host, port, username, auth_type, group_id, rdp_enabled, rdp_protocol, rdp_port, rdp_username, rdp_domain, rdp_security, rdp_ignore_cert, created_at, updated_at FROM servers ORDER BY created_at DESC');
   const servers = stmt.all();
   return c.json({ success: true, servers });
 });
@@ -28,7 +28,7 @@ serversRouter.get('/', (c) => {
 // GET single server
 serversRouter.get('/:id', (c) => {
   const id = c.req.param('id');
-  const stmt = db.prepare('SELECT id, name, host, port, username, auth_type, group_id, desktop_protocol, desktop_port, desktop_width, desktop_height, created_at, updated_at FROM servers WHERE id = ?');
+  const stmt = db.prepare('SELECT id, name, host, port, username, auth_type, group_id, rdp_enabled, rdp_protocol, rdp_port, rdp_username, rdp_domain, rdp_security, rdp_ignore_cert, created_at, updated_at FROM servers WHERE id = ?');
   const server = stmt.get(id);
 
   if (!server) {
@@ -76,7 +76,10 @@ serversRouter.post('/:id/test', async (c) => {
 // POST create server
 serversRouter.post('/', async (c) => {
   const body = await c.req.json();
-  const { name, host, port, username, authType, credential, groupId, desktopProtocol, desktopPort, desktopWidth, desktopHeight } = body;
+  const {
+    name, host, port, username, authType, credential, groupId,
+    rdpProtocol, rdpPort, rdpUsername, rdpPassword, rdpDomain, rdpSecurity, rdpIgnoreCert
+  } = body;
 
   if (!name || !host || !username || !authType || !credential) {
     return c.json({ success: false, message: 'Missing required fields' }, 400);
@@ -85,17 +88,27 @@ serversRouter.post('/', async (c) => {
   const id = crypto.randomUUID();
   const credentialEncrypted = encrypt(credential);
   const validGroupId = groupId && typeof groupId === 'string' && groupId.trim() !== '' ? groupId.trim() : null;
-  const protocol = desktopProtocol || 'rdp';
-  const dPort = Number(desktopPort) || (protocol === 'vnc' ? 5900 : 3389);
-  const dWidth = Number(desktopWidth) || 1920;
-  const dHeight = Number(desktopHeight) || 1080;
+
+  const protocol = rdpProtocol === 'vnc' ? 'vnc' : 'rdp';
+  const defaultRdpPort = protocol === 'vnc' ? 5900 : 3389;
+  const parsedRdpPort = Number(rdpPort) || defaultRdpPort;
+  const rdpPasswordEncrypted = rdpPassword && typeof rdpPassword === 'string' && rdpPassword.trim() !== ''
+    ? encrypt(rdpPassword)
+    : null;
 
   const stmt = db.prepare(`
-    INSERT INTO servers (id, name, host, port, username, auth_type, credential_encrypted, group_id, desktop_protocol, desktop_port, desktop_width, desktop_height)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO servers (
+      id, name, host, port, username, auth_type, credential_encrypted, group_id,
+      rdp_protocol, rdp_port, rdp_username, rdp_password_encrypted, rdp_domain, rdp_security, rdp_ignore_cert
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
-  stmt.run(id, name, host, Number(port) || 22, username, authType, credentialEncrypted, validGroupId, protocol, dPort, dWidth, dHeight);
+  stmt.run(
+    id, name, host, Number(port) || 22, username, authType, credentialEncrypted, validGroupId,
+    protocol, parsedRdpPort, rdpUsername || null, rdpPasswordEncrypted, rdpDomain || null,
+    rdpSecurity || 'any', rdpIgnoreCert !== false ? 1 : 0
+  );
 
   return c.json({
     success: true,
@@ -107,10 +120,12 @@ serversRouter.post('/', async (c) => {
       username,
       auth_type: authType,
       group_id: validGroupId,
-      desktop_protocol: protocol,
-      desktop_port: dPort,
-      desktop_width: dWidth,
-      desktop_height: dHeight,
+      rdp_protocol: protocol,
+      rdp_port: parsedRdpPort,
+      rdp_username: rdpUsername || null,
+      rdp_domain: rdpDomain || null,
+      rdp_security: rdpSecurity || 'any',
+      rdp_ignore_cert: rdpIgnoreCert !== false ? 1 : 0,
     },
   });
 });
@@ -119,7 +134,10 @@ serversRouter.post('/', async (c) => {
 serversRouter.put('/:id', async (c) => {
   const id = c.req.param('id');
   const body = await c.req.json();
-  const { name, host, port, username, authType, credential, groupId, desktopProtocol, desktopPort, desktopWidth, desktopHeight } = body;
+  const {
+    name, host, port, username, authType, credential, groupId,
+    rdpProtocol, rdpPort, rdpUsername, rdpPassword, rdpDomain, rdpSecurity, rdpIgnoreCert
+  } = body;
 
   const checkStmt = db.prepare('SELECT * FROM servers WHERE id = ?');
   const existing = checkStmt.get(id) as ServerRecord | undefined;
@@ -136,6 +154,15 @@ serversRouter.put('/:id', async (c) => {
     credentialEncrypted = encrypt(credential);
   }
 
+  let rdpPasswordEncrypted = existing.rdp_password_encrypted;
+  if (rdpPassword !== undefined) {
+    if (typeof rdpPassword === 'string' && rdpPassword.trim() !== '') {
+      rdpPasswordEncrypted = encrypt(rdpPassword);
+    } else {
+      rdpPasswordEncrypted = null;
+    }
+  }
+
   const validGroupId = groupId && typeof groupId === 'string' && groupId.trim() !== '' ? groupId.trim() : null;
   if (validGroupId) {
     const groupCheck = db.prepare('SELECT id FROM server_groups WHERE id = ?').get(validGroupId);
@@ -144,14 +171,15 @@ serversRouter.put('/:id', async (c) => {
     }
   }
 
-  const protocol = desktopProtocol || existing.desktop_protocol || 'rdp';
-  const dPort = Number(desktopPort) || existing.desktop_port || (protocol === 'vnc' ? 5900 : 3389);
-  const dWidth = Number(desktopWidth) || existing.desktop_width || 1920;
-  const dHeight = Number(desktopHeight) || existing.desktop_height || 1080;
+  const protocol = rdpProtocol === 'vnc' ? 'vnc' : 'rdp';
+  const defaultRdpPort = protocol === 'vnc' ? 5900 : 3389;
+  const parsedRdpPort = Number(rdpPort) || defaultRdpPort;
 
   const updateStmt = db.prepare(`
     UPDATE servers
-    SET name = ?, host = ?, port = ?, username = ?, auth_type = ?, credential_encrypted = ?, group_id = ?, desktop_protocol = ?, desktop_port = ?, desktop_width = ?, desktop_height = ?, updated_at = CURRENT_TIMESTAMP
+    SET name = ?, host = ?, port = ?, username = ?, auth_type = ?, credential_encrypted = ?, group_id = ?,
+        rdp_protocol = ?, rdp_port = ?, rdp_username = ?, rdp_password_encrypted = ?, rdp_domain = ?,
+        rdp_security = ?, rdp_ignore_cert = ?, updated_at = CURRENT_TIMESTAMP
     WHERE id = ?
   `);
 
@@ -164,9 +192,12 @@ serversRouter.put('/:id', async (c) => {
     credentialEncrypted,
     validGroupId,
     protocol,
-    dPort,
-    dWidth,
-    dHeight,
+    parsedRdpPort,
+    rdpUsername || null,
+    rdpPasswordEncrypted,
+    rdpDomain || null,
+    rdpSecurity || 'any',
+    rdpIgnoreCert !== false ? 1 : 0,
     id
   );
 
@@ -178,11 +209,62 @@ serversRouter.put('/:id', async (c) => {
     username,
     auth_type: authType,
     group_id: validGroupId,
-    desktop_protocol: protocol,
-    desktop_port: dPort,
-    desktop_width: dWidth,
-    desktop_height: dHeight,
+    rdp_protocol: protocol,
+    rdp_port: parsedRdpPort,
+    rdp_username: rdpUsername || null,
+    rdp_domain: rdpDomain || null,
+    rdp_security: rdpSecurity || 'any',
+    rdp_ignore_cert: rdpIgnoreCert !== false ? 1 : 0,
   };
+
+  return c.json({ success: true, server: updatedServer });
+});
+
+// PATCH update remote desktop config for a server
+serversRouter.patch('/:id/desktop', async (c) => {
+  const id = c.req.param('id');
+  const body = await c.req.json();
+  const { rdpProtocol, rdpPort, rdpUsername, rdpPassword, rdpDomain, rdpSecurity, rdpIgnoreCert } = body;
+
+  const checkStmt = db.prepare('SELECT * FROM servers WHERE id = ?');
+  const existing = checkStmt.get(id) as ServerRecord | undefined;
+  if (!existing) {
+    return c.json({ success: false, message: 'Server not found' }, 404);
+  }
+
+  const protocol = rdpProtocol === 'vnc' ? 'vnc' : 'rdp';
+  const defaultRdpPort = protocol === 'vnc' ? 5900 : 3389;
+  const parsedRdpPort = Number(rdpPort) || defaultRdpPort;
+
+  let rdpPasswordEncrypted = existing.rdp_password_encrypted;
+  if (rdpPassword !== undefined) {
+    if (typeof rdpPassword === 'string' && rdpPassword.trim() !== '') {
+      rdpPasswordEncrypted = encrypt(rdpPassword);
+    } else {
+      rdpPasswordEncrypted = null;
+    }
+  }
+
+  const updateStmt = db.prepare(`
+    UPDATE servers
+    SET rdp_protocol = ?, rdp_port = ?, rdp_username = ?, rdp_password_encrypted = ?,
+        rdp_domain = ?, rdp_security = ?, rdp_ignore_cert = ?, updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `);
+
+  updateStmt.run(
+    protocol,
+    parsedRdpPort,
+    rdpUsername || null,
+    rdpPasswordEncrypted,
+    rdpDomain || null,
+    rdpSecurity || 'any',
+    rdpIgnoreCert !== false ? 1 : 0,
+    id
+  );
+
+  const stmt = db.prepare('SELECT id, name, host, port, username, auth_type, group_id, rdp_enabled, rdp_protocol, rdp_port, rdp_username, rdp_domain, rdp_security, rdp_ignore_cert, created_at, updated_at FROM servers WHERE id = ?');
+  const updatedServer = stmt.get(id);
 
   return c.json({ success: true, server: updatedServer });
 });
@@ -226,3 +308,4 @@ serversRouter.delete('/:id', (c) => {
 
   return c.json({ success: true, message: 'Server deleted successfully' });
 });
+

@@ -26,9 +26,6 @@ export const EditServerModal: React.FC<EditServerModalProps> = ({
   const [credential, setCredential] = useState('');
   const [groupId, setGroupId] = useState<string | null>(null);
 
-  const [desktopProtocol, setDesktopProtocol] = useState<'rdp' | 'vnc'>('rdp');
-  const [desktopPort, setDesktopPort] = useState('3389');
-
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
 
@@ -44,8 +41,6 @@ export const EditServerModal: React.FC<EditServerModalProps> = ({
       setAuthType(server.auth_type);
       setCredential('');
       setGroupId(server.group_id || null);
-      setDesktopProtocol((server.desktop_protocol as 'rdp' | 'vnc') || 'rdp');
-      setDesktopPort(String(server.desktop_port || (server.desktop_protocol === 'vnc' ? 5900 : 3389)));
       setTestResult(null);
       setError(null);
     }
@@ -103,8 +98,6 @@ export const EditServerModal: React.FC<EditServerModalProps> = ({
         authType,
         credential: credential.trim() ? credential : undefined,
         groupId: groupId || null,
-        desktopProtocol,
-        desktopPort: parseInt(desktopPort, 10) || (desktopProtocol === 'vnc' ? 5900 : 3389),
       });
       onServerUpdated(updated);
       onClose();
@@ -263,35 +256,6 @@ export const EditServerModal: React.FC<EditServerModalProps> = ({
                 className="w-full bg-[#1f1f1f] border border-zinc-800 rounded-lg p-3 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-sky-500 font-mono text-[11px]"
               />
             )}
-          </div>
-
-          {/* Remote Desktop Settings */}
-          <div className="grid grid-cols-2 gap-3 pt-2 border-t border-zinc-800/80">
-            <div>
-              <label className="block text-slate-300 font-medium mb-1">GUI Desktop Protocol</label>
-              <select
-                value={desktopProtocol}
-                onChange={(e) => {
-                  const val = e.target.value as 'rdp' | 'vnc';
-                  setDesktopProtocol(val);
-                  setDesktopPort(val === 'vnc' ? '5900' : '3389');
-                }}
-                className="w-full bg-[#1f1f1f] border border-zinc-800 rounded-lg px-2.5 py-2 text-slate-200 focus:outline-none focus:border-sky-500"
-              >
-                <option value="rdp">RDP (Windows Remote Desktop)</option>
-                <option value="vnc">VNC (Linux Desktop / X11)</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-slate-300 font-medium mb-1">GUI Desktop Port</label>
-              <input
-                type="number"
-                value={desktopPort}
-                onChange={(e) => setDesktopPort(e.target.value)}
-                placeholder={desktopProtocol === 'vnc' ? '5900' : '3389'}
-                className="w-full bg-[#1f1f1f] border border-zinc-800 rounded-lg px-3 py-2 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-sky-500"
-              />
-            </div>
           </div>
 
           {/* Pre-flight test output */}

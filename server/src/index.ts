@@ -38,7 +38,7 @@ app.get(
   })
 );
 
-// WebSocket route for Remote Desktop (Guacamole)
+// WebSocket route for Remote Desktop
 app.get(
   '/ws/desktop',
   upgradeWebSocket((c) => {

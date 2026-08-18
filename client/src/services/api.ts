@@ -86,8 +86,6 @@ export async function addServer(payload: {
   authType: 'password' | 'privateKey';
   credential: string;
   groupId?: string | null;
-  desktopProtocol?: 'rdp' | 'vnc';
-  desktopPort?: number;
 }): Promise<Server> {
   const res = await fetch(`${API_BASE}/servers`, {
     method: 'POST',
@@ -111,8 +109,6 @@ export async function updateServer(
     authType: 'password' | 'privateKey';
     credential?: string;
     groupId?: string | null;
-    desktopProtocol?: 'rdp' | 'vnc';
-    desktopPort?: number;
   }
 ): Promise<Server> {
   const res = await fetch(`${API_BASE}/servers/${id}`, {
@@ -290,5 +286,35 @@ export async function renameSftpItem(serverId: string, oldPath: string, newPath:
     throw new Error(data.message || 'Failed to rename item');
   }
 }
+
+/* ==================== Remote Desktop API Methods ==================== */
+
+export async function updateDesktopConfig(
+  serverId: string,
+  payload: {
+    rdpProtocol?: 'rdp' | 'vnc';
+    rdpPort?: number;
+    rdpUsername?: string;
+    rdpPassword?: string;
+    rdpDomain?: string;
+    rdpSecurity?: 'any' | 'nla' | 'rdp' | 'tls';
+    rdpIgnoreCert?: boolean;
+  }
+): Promise<Server> {
+  const res = await fetch(`${API_BASE}/servers/${serverId}/desktop`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok || !data.success) {
+    throw new Error(data.message || 'Failed to update remote desktop config');
+  }
+
+  return data.server;
+}
+
 
 

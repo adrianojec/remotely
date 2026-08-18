@@ -12,7 +12,7 @@ import { ServerTabs } from './components/dashboard/ServerTabs';
 import { TerminalView } from './components/terminal/TerminalView';
 import { ContainersTable } from './components/docker/ContainersTable';
 import { SftpExplorer } from './components/sftp/SftpExplorer';
-import { DesktopView } from './components/desktop/DesktopView';
+import { RemoteDesktopView } from './components/desktop/RemoteDesktopView';
 import { Server as ServerIcon, Plus } from 'lucide-react';
 
 export function App() {
@@ -140,21 +140,28 @@ export function App() {
           {activeServer ? (
             <>
               {/* Tab Navigation */}
-              <ServerTabs activeTab={activeTab} onTabChange={(t) => setActiveTab(t)} />
+              <ServerTabs
+                activeTab={activeTab}
+                onTabChange={(t) => setActiveTab(t)}
+              />
 
               {/* View Content */}
               <div className="flex-1 p-6 overflow-hidden">
                 {activeTab === 'terminal' && (
                   <TerminalView key={activeServer.id} server={activeServer} />
                 )}
-                {activeTab === 'desktop' && (
-                  <DesktopView key={activeServer.id} server={activeServer} />
-                )}
                 {activeTab === 'containers' && (
                   <ContainersTable key={activeServer.id} server={activeServer} />
                 )}
                 {activeTab === 'sftp' && (
                   <SftpExplorer key={activeServer.id} server={activeServer} />
+                )}
+                {activeTab === 'desktop' && (
+                  <RemoteDesktopView
+                    key={activeServer.id}
+                    server={activeServer}
+                    onServerUpdated={handleServerUpdated}
+                  />
                 )}
               </div>
             </>

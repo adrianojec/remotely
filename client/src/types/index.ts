@@ -13,10 +13,13 @@ export interface Server {
   username: string;
   auth_type: 'password' | 'privateKey';
   group_id?: string | null;
-  desktop_protocol?: 'rdp' | 'vnc' | 'ssh' | null;
-  desktop_port?: number | null;
-  desktop_width?: number | null;
-  desktop_height?: number | null;
+  rdp_enabled?: number;
+  rdp_protocol?: 'rdp' | 'vnc';
+  rdp_port?: number;
+  rdp_username?: string | null;
+  rdp_domain?: string | null;
+  rdp_security?: 'any' | 'nla' | 'rdp' | 'tls';
+  rdp_ignore_cert?: number;
   created_at?: string;
   updated_at?: string;
 }
@@ -44,4 +47,5 @@ export interface SftpItem {
 }
 
 export type TabType = 'terminal' | 'containers' | 'sftp' | 'desktop';
+
 

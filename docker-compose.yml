@@ -1,12 +1,14 @@
 name: remotely
 
 services:
-  # Guacamole Remote Desktop Gateway Daemon
+  # Apache Guacamole Daemon (guacd) for RDP/VNC translation
   guacd:
     image: guacamole/guacd:latest
-    container_name: remotely-guacd
     platform: linux/amd64
+    container_name: remotely-guacd
     restart: unless-stopped
+    ports:
+      - "4822:4822"
 
   # Remotely Backend Node API & WebSocket Gateway
   server:
