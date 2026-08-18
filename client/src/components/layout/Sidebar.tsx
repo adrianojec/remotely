@@ -48,11 +48,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [search, setSearch] = useState('');
   const [testingId, setTestingId] = useState<string | null>(null);
   const [statusMap, setStatusMap] = useState<Record<string, { online: boolean; msg: string }>>({});
-  // Track collapsed state for groups (group ID -> boolean) and 'ungrouped' section
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  // Track expanded state for groups (group ID -> boolean) and 'ungrouped' section
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
-  const toggleCollapse = (key: string) => {
-    setCollapsed((prev) => ({
+  const toggleExpand = (key: string) => {
+    setExpanded((prev) => ({
       ...prev,
       [key]: !prev[key],
     }));
@@ -259,8 +259,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {/* Server Groups Expansion Panels */}
             {groups.map((group) => {
               const groupServers = filteredServers.filter((s) => s.group_id === group.id);
-              // Auto expand when search active, otherwise check collapsed state
-              const isExpanded = search.trim() !== '' ? true : !collapsed[group.id];
+              // Auto expand when search active, otherwise check expanded state
+              const isExpanded = search.trim() !== '' ? true : !!expanded[group.id];
 
               return (
                 <div
@@ -269,7 +269,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 >
                   {/* Expansion Panel Header */}
                   <div
-                    onClick={() => toggleCollapse(group.id)}
+                    onClick={() => toggleExpand(group.id)}
                     className="flex items-center justify-between px-3 py-2 bg-[#212121] hover:bg-[#262626] cursor-pointer transition-colors group/header"
                   >
                     <div className="flex items-center gap-2 min-w-0">
@@ -334,12 +334,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {(ungroupedServers.length > 0 || groups.length === 0) && (
               <div className="rounded-xl border border-zinc-800/80 bg-[#1a1a1a] overflow-hidden transition-all">
                 <div
-                  onClick={() => toggleCollapse('ungrouped')}
+                  onClick={() => toggleExpand('ungrouped')}
                   className="flex items-center justify-between px-3 py-2 bg-[#212121] hover:bg-[#262626] cursor-pointer transition-colors"
                 >
                   <div className="flex items-center gap-2 min-w-0">
                     <button className="text-slate-400 hover:text-slate-200">
-                      {search.trim() !== '' || !collapsed['ungrouped'] ? (
+                      {search.trim() !== '' || !!expanded['ungrouped'] ? (
                         <ChevronDown className="w-3.5 h-3.5" />
                       ) : (
                         <ChevronRight className="w-3.5 h-3.5" />
@@ -355,7 +355,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   </div>
                 </div>
 
-                {(search.trim() !== '' || !collapsed['ungrouped']) && (
+                {(search.trim() !== '' || !!expanded['ungrouped']) && (
                   <div className="p-1.5 space-y-1 bg-[#181818]/60 border-t border-zinc-800/40">
                     {ungroupedServers.length === 0 ? (
                       <div className="p-3 text-center text-[11px] text-slate-500 italic">
