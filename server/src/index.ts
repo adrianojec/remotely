@@ -4,6 +4,7 @@ import { createNodeWebSocket } from '@hono/node-ws';
 import { cors } from 'hono/cors';
 import dotenv from 'dotenv';
 import { serversRouter } from './routes/servers.js';
+import { groupsRouter } from './routes/groups.js';
 import { dockerRouter } from './routes/docker.js';
 import { pm2Router } from './routes/pm2.js';
 import { handleTerminalWebSocket } from './routes/terminal.js';
@@ -16,7 +17,7 @@ const app = new Hono();
 // CORS Middleware
 app.use('*', cors({
   origin: '*',
-  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization'],
 }));
 
@@ -37,6 +38,7 @@ app.get(
 );
 
 // REST API Routers
+app.route('/api/groups', groupsRouter);
 app.route('/api/servers', serversRouter);
 app.route('/api/servers', dockerRouter);
 app.route('/api/servers', pm2Router);

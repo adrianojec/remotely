@@ -1,3 +1,10 @@
+export interface ServerGroup {
+  id: string;
+  name: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface Server {
   id: string;
   name: string;
@@ -5,6 +12,7 @@ export interface Server {
   port: number;
   username: string;
   auth_type: 'password' | 'privateKey';
+  group_id?: string | null;
   created_at?: string;
   updated_at?: string;
 }

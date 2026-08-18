@@ -20,7 +20,7 @@ export function getServerCredentials(server: ServerRecord): SshCredentials {
 
 // GET all servers (sanitized: hides encrypted/plain credentials)
 serversRouter.get('/', (c) => {
-  const stmt = db.prepare('SELECT id, name, host, port, username, auth_type, created_at, updated_at FROM servers ORDER BY created_at DESC');
+  const stmt = db.prepare('SELECT id, name, host, port, username, auth_type, group_id, created_at, updated_at FROM servers ORDER BY created_at DESC');
   const servers = stmt.all();
   return c.json({ success: true, servers });
 });
@@ -28,7 +28,7 @@ serversRouter.get('/', (c) => {
 // GET single server
 serversRouter.get('/:id', (c) => {
   const id = c.req.param('id');
-  const stmt = db.prepare('SELECT id, name, host, port, username, auth_type, created_at, updated_at FROM servers WHERE id = ?');
+  const stmt = db.prepare('SELECT id, name, host, port, username, auth_type, group_id, created_at, updated_at FROM servers WHERE id = ?');
   const server = stmt.get(id);
 
   if (!server) {
@@ -76,7 +76,7 @@ serversRouter.post('/:id/test', async (c) => {
 // POST create server
 serversRouter.post('/', async (c) => {
   const body = await c.req.json();
-  const { name, host, port, username, authType, credential } = body;
+  const { name, host, port, username, authType, credential, groupId } = body;
 
   if (!name || !host || !username || !authType || !credential) {
     return c.json({ success: false, message: 'Missing required fields' }, 400);
@@ -84,13 +84,14 @@ serversRouter.post('/', async (c) => {
 
   const id = crypto.randomUUID();
   const credentialEncrypted = encrypt(credential);
+  const validGroupId = groupId && typeof groupId === 'string' && groupId.trim() !== '' ? groupId.trim() : null;
 
   const stmt = db.prepare(`
-    INSERT INTO servers (id, name, host, port, username, auth_type, credential_encrypted)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO servers (id, name, host, port, username, auth_type, credential_encrypted, group_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
-  stmt.run(id, name, host, Number(port) || 22, username, authType, credentialEncrypted);
+  stmt.run(id, name, host, Number(port) || 22, username, authType, credentialEncrypted, validGroupId);
 
   return c.json({
     success: true,
@@ -101,8 +102,95 @@ serversRouter.post('/', async (c) => {
       port: Number(port) || 22,
       username,
       auth_type: authType,
+      group_id: validGroupId,
     },
   });
+});
+
+// PUT update server
+serversRouter.put('/:id', async (c) => {
+  const id = c.req.param('id');
+  const body = await c.req.json();
+  const { name, host, port, username, authType, credential, groupId } = body;
+
+  const checkStmt = db.prepare('SELECT * FROM servers WHERE id = ?');
+  const existing = checkStmt.get(id) as ServerRecord | undefined;
+  if (!existing) {
+    return c.json({ success: false, message: 'Server not found' }, 404);
+  }
+
+  if (!name || !host || !username || !authType) {
+    return c.json({ success: false, message: 'Missing required fields' }, 400);
+  }
+
+  let credentialEncrypted = existing.credential_encrypted;
+  if (credential && typeof credential === 'string' && credential.trim() !== '') {
+    credentialEncrypted = encrypt(credential);
+  }
+
+  const validGroupId = groupId && typeof groupId === 'string' && groupId.trim() !== '' ? groupId.trim() : null;
+  if (validGroupId) {
+    const groupCheck = db.prepare('SELECT id FROM server_groups WHERE id = ?').get(validGroupId);
+    if (!groupCheck) {
+      return c.json({ success: false, message: 'Target group not found' }, 404);
+    }
+  }
+
+  const updateStmt = db.prepare(`
+    UPDATE servers
+    SET name = ?, host = ?, port = ?, username = ?, auth_type = ?, credential_encrypted = ?, group_id = ?, updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `);
+
+  updateStmt.run(
+    name,
+    host,
+    Number(port) || 22,
+    username,
+    authType,
+    credentialEncrypted,
+    validGroupId,
+    id
+  );
+
+  const updatedServer = {
+    id,
+    name,
+    host,
+    port: Number(port) || 22,
+    username,
+    auth_type: authType,
+    group_id: validGroupId,
+  };
+
+  return c.json({ success: true, server: updatedServer });
+});
+
+// PATCH assign/move server to a group
+serversRouter.patch('/:id/group', async (c) => {
+  const id = c.req.param('id');
+  const body = await c.req.json();
+  const { groupId } = body; // can be string or null
+
+  const validGroupId = groupId && typeof groupId === 'string' && groupId.trim() !== '' ? groupId.trim() : null;
+
+  const checkStmt = db.prepare('SELECT id FROM servers WHERE id = ?');
+  const existing = checkStmt.get(id);
+  if (!existing) {
+    return c.json({ success: false, message: 'Server not found' }, 404);
+  }
+
+  if (validGroupId) {
+    const groupCheck = db.prepare('SELECT id FROM server_groups WHERE id = ?').get(validGroupId);
+    if (!groupCheck) {
+      return c.json({ success: false, message: 'Target group not found' }, 404);
+    }
+  }
+
+  const updateStmt = db.prepare('UPDATE servers SET group_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?');
+  updateStmt.run(validGroupId, id);
+
+  return c.json({ success: true, message: 'Server group updated successfully', group_id: validGroupId });
 });
 
 // DELETE server

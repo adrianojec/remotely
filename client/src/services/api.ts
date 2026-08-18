@@ -1,6 +1,51 @@
-import { Server, DockerContainer, Pm2Process } from '../types';
+import { Server, ServerGroup, DockerContainer, Pm2Process } from '../types';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
+
+export async function fetchGroups(): Promise<ServerGroup[]> {
+  const res = await fetch(`${API_BASE}/groups`);
+  const data = await res.json();
+  if (!res.ok || !data.success) {
+    throw new Error(data.message || 'Failed to fetch groups');
+  }
+  return data.groups;
+}
+
+export async function createGroup(name: string): Promise<ServerGroup> {
+  const res = await fetch(`${API_BASE}/groups`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name }),
+  });
+  const data = await res.json();
+  if (!res.ok || !data.success) {
+    throw new Error(data.message || 'Failed to create group');
+  }
+  return data.group;
+}
+
+export async function deleteGroup(id: string): Promise<{ deletedServersCount: number }> {
+  const res = await fetch(`${API_BASE}/groups/${id}`, {
+    method: 'DELETE',
+  });
+  const data = await res.json();
+  if (!res.ok || !data.success) {
+    throw new Error(data.message || 'Failed to delete group');
+  }
+  return { deletedServersCount: data.deletedServersCount || 0 };
+}
+
+export async function assignServerGroup(serverId: string, groupId: string | null): Promise<void> {
+  const res = await fetch(`${API_BASE}/servers/${serverId}/group`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ groupId }),
+  });
+  const data = await res.json();
+  if (!res.ok || !data.success) {
+    throw new Error(data.message || 'Failed to assign server group');
+  }
+}
 
 export async function fetchServers(): Promise<Server[]> {
   const res = await fetch(`${API_BASE}/servers`);
@@ -40,6 +85,7 @@ export async function addServer(payload: {
   username: string;
   authType: 'password' | 'privateKey';
   credential: string;
+  groupId?: string | null;
 }): Promise<Server> {
   const res = await fetch(`${API_BASE}/servers`, {
     method: 'POST',
@@ -49,6 +95,30 @@ export async function addServer(payload: {
   const data = await res.json();
   if (!res.ok || !data.success) {
     throw new Error(data.message || 'Failed to create server');
+  }
+  return data.server;
+}
+
+export async function updateServer(
+  id: string,
+  payload: {
+    name: string;
+    host: string;
+    port: number;
+    username: string;
+    authType: 'password' | 'privateKey';
+    credential?: string;
+    groupId?: string | null;
+  }
+): Promise<Server> {
+  const res = await fetch(`${API_BASE}/servers/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json();
+  if (!res.ok || !data.success) {
+    throw new Error(data.message || 'Failed to update server');
   }
   return data.server;
 }

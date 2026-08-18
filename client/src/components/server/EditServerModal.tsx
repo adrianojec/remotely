@@ -1,22 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { X, Server, Key, Lock, CheckCircle2, AlertTriangle, Loader2, Folder } from 'lucide-react';
-import { addServer, testConnection } from '../../services/api';
+import { X, Server, Key, Lock, CheckCircle2, AlertTriangle, Loader2, Folder, Edit3 } from 'lucide-react';
+import { updateServer, testConnection, testStoredServer } from '../../services/api';
 import { Server as ServerType, ServerGroup } from '../../types';
 
-interface AddServerModalProps {
+interface EditServerModalProps {
   isOpen: boolean;
+  server: ServerType | null;
   groups?: ServerGroup[];
-  defaultGroupId?: string | null;
   onClose: () => void;
-  onServerAdded: (server: ServerType) => void;
+  onServerUpdated: (server: ServerType) => void;
 }
 
-export const AddServerModal: React.FC<AddServerModalProps> = ({
+export const EditServerModal: React.FC<EditServerModalProps> = ({
   isOpen,
+  server,
   groups = [],
-  defaultGroupId = null,
   onClose,
-  onServerAdded,
+  onServerUpdated,
 }) => {
   const [name, setName] = useState('');
   const [host, setHost] = useState('');
@@ -24,7 +24,7 @@ export const AddServerModal: React.FC<AddServerModalProps> = ({
   const [username, setUsername] = useState('root');
   const [authType, setAuthType] = useState<'password' | 'privateKey'>('password');
   const [credential, setCredential] = useState('');
-  const [groupId, setGroupId] = useState<string | null>(defaultGroupId);
+  const [groupId, setGroupId] = useState<string | null>(null);
 
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
@@ -33,31 +33,45 @@ export const AddServerModal: React.FC<AddServerModalProps> = ({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isOpen) {
-      setGroupId(defaultGroupId || null);
+    if (isOpen && server) {
+      setName(server.name);
+      setHost(server.host);
+      setPort(String(server.port || 22));
+      setUsername(server.username);
+      setAuthType(server.auth_type);
+      setCredential('');
+      setGroupId(server.group_id || null);
+      setTestResult(null);
+      setError(null);
     }
-  }, [isOpen, defaultGroupId]);
+  }, [isOpen, server]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !server) return null;
 
   const handleTest = async () => {
-    if (!host || !username || !credential) {
-      setError('Please fill in Host, Username, and Password/Key before testing.');
+    if (!host || !username) {
+      setError('Please fill in Host and Username before testing.');
       return;
     }
+
     setError(null);
     setTesting(true);
     setTestResult(null);
 
     try {
-      const res = await testConnection({
-        host,
-        port: parseInt(port, 10) || 22,
-        username,
-        authType,
-        credential,
-      });
-      setTestResult(res);
+      if (credential && credential.trim() !== '') {
+        const res = await testConnection({
+          host,
+          port: parseInt(port, 10) || 22,
+          username,
+          authType,
+          credential,
+        });
+        setTestResult(res);
+      } else {
+        const res = await testStoredServer(server.id);
+        setTestResult(res);
+      }
     } catch (err: any) {
       setTestResult({ success: false, message: err.message || 'Connection test failed.' });
     } finally {
@@ -67,7 +81,7 @@ export const AddServerModal: React.FC<AddServerModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !host || !username || !credential) {
+    if (!name || !host || !username) {
       setError('Please complete all required fields.');
       return;
     }
@@ -76,32 +90,32 @@ export const AddServerModal: React.FC<AddServerModalProps> = ({
     setError(null);
 
     try {
-      const server = await addServer({
+      const updated = await updateServer(server.id, {
         name,
         host,
         port: parseInt(port, 10) || 22,
         username,
         authType,
-        credential,
+        credential: credential.trim() ? credential : undefined,
         groupId: groupId || null,
       });
-      onServerAdded(server);
+      onServerUpdated(updated);
       onClose();
     } catch (err: any) {
-      setError(err.message || 'Failed to save server.');
+      setError(err.message || 'Failed to update server.');
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-      <div className="bg-[#181818] border border-[#2b2b2b] rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+      <div className="bg-[#181818] border border-[#2b2b2b] rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="px-6 py-4 border-b border-[#2b2b2b] flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Server className="w-5 h-5 text-sky-400" />
-            <h3 className="font-semibold text-slate-100 text-base">Add Remote Host</h3>
+            <Edit3 className="w-5 h-5 text-sky-400" />
+            <h3 className="font-semibold text-slate-100 text-base">Edit Server Configuration</h3>
           </div>
           <button
             onClick={onClose}
@@ -221,25 +235,25 @@ export const AddServerModal: React.FC<AddServerModalProps> = ({
           {/* Credential input */}
           <div>
             <label className="block text-slate-300 font-medium mb-1">
-              {authType === 'password' ? 'SSH Password *' : 'PEM Private Key Content *'}
+              {authType === 'password'
+                ? 'SSH Password (leave blank to keep existing)'
+                : 'PEM Private Key Content (leave blank to keep existing)'}
             </label>
             {authType === 'password' ? (
               <input
                 type="password"
-                placeholder="••••••••••••"
+                placeholder="•••••••••••• (Unchanged)"
                 value={credential}
                 onChange={(e) => setCredential(e.target.value)}
                 className="w-full bg-[#1f1f1f] border border-zinc-800 rounded-lg px-3 py-2 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-sky-500 font-mono"
-                required
               />
             ) : (
               <textarea
                 rows={4}
-                placeholder="-----BEGIN OPENSSH PRIVATE KEY-----..."
+                placeholder="-----BEGIN OPENSSH PRIVATE KEY-----... (Unchanged)"
                 value={credential}
                 onChange={(e) => setCredential(e.target.value)}
                 className="w-full bg-[#1f1f1f] border border-zinc-800 rounded-lg p-3 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-sky-500 font-mono text-[11px]"
-                required
               />
             )}
           </div>
@@ -288,7 +302,7 @@ export const AddServerModal: React.FC<AddServerModalProps> = ({
                 className="px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-medium transition-colors shadow-lg shadow-sky-600/30 flex items-center gap-1.5 disabled:opacity-50"
               >
                 {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
-                Save Server
+                Save Changes
               </button>
             </div>
           </div>
