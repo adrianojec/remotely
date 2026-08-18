@@ -39,18 +39,25 @@
 - **Docker:** Execute `docker ps -a --format '{{json .}}'` over SSH to list containers; provide endpoints for container actions (`start`, `stop`, `restart`, `logs`).
 - **Graceful Fallbacks:** Structured error responses when Docker is not installed on the target machine.
 
-### D. Architecture Roadmap
+### D. In-Browser SFTP File Explorer & Management
 
-- **Phase 1 (MVP):** Server manager, SSH terminal, Docker container dashboard.
-- **Phase 2:** In-browser SFTP explorer (`ssh2.sftp()`) with Monaco editor for config edits.
-- **Phase 3:** RDP/VNC remote desktop gateway integration (`guacd` / noVNC).
+- **SFTP Gateway:** Initiate SFTP subsystem sessions over SSH using `ssh2.Client.sftp()`.
+- **Remote Filesystem Operations:** Browse remote directories, view file details (sizes, permissions, modification dates), stream file uploads & downloads, create directories & files, rename, and delete remote items.
+- **In-Browser Config & Code Editor:** View and edit text/config files (`.env`, `.conf`, `.yml`, `.json`, `.sh`) directly in the web UI.
+
+### E. Architecture Roadmap
+
+- **Phase 1 (MVP):** Server manager, SSH terminal, Docker container dashboard, in-browser SFTP explorer.
+- **Phase 2:** RDP/VNC remote desktop gateway integration (`guacd` / noVNC).
 
 ---
 
 ## 3. UI Layout (Tailwind CSS)
 
-- **Sidebar:** Host list with status badges, connection status, quick search.
+- **Sidebar:** Host list with status badges, connection status, quick search, group filtering.
 - **Server View Tabs:**
+  - **Terminal:** Full-screen responsive terminal interface (`@xterm/xterm`).
   - **Containers:** `DataTable` displaying container state, port mappings, action dropdowns, and logs modal.
-  - **Terminal:** Full-screen responsive terminal interface.
+  - **SFTP Explorer:** Remote filesystem file browser with breadcrumbs, drag-and-drop upload, download, file creation, and live text editor modal.
+
 

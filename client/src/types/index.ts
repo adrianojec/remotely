@@ -29,5 +29,15 @@ export interface DockerContainer {
   State: string;
 }
 
-export type TabType = 'terminal' | 'containers';
+export interface SftpItem {
+  name: string;
+  path: string;
+  isDirectory: boolean;
+  isSymbolicLink: boolean;
+  size: number;
+  mode: number;
+  modifiedAt: string;
+}
+
+export type TabType = 'terminal' | 'containers' | 'sftp';
 

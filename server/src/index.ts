@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 import { serversRouter } from './routes/servers.js';
 import { groupsRouter } from './routes/groups.js';
 import { dockerRouter } from './routes/docker.js';
+import { sftpRouter } from './routes/sftp.js';
 import { handleTerminalWebSocket } from './routes/terminal.js';
 
 dotenv.config();
@@ -40,6 +41,7 @@ app.get(
 app.route('/api/groups', groupsRouter);
 app.route('/api/servers', serversRouter);
 app.route('/api/servers', dockerRouter);
+app.route('/api/servers', sftpRouter);
 
 app.get('/api/health', (c) => {
   return c.json({ status: 'ok', timestamp: new Date().toISOString() });

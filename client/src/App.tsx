@@ -11,6 +11,7 @@ import { MoveServerModal } from './components/group/MoveServerModal';
 import { ServerTabs } from './components/dashboard/ServerTabs';
 import { TerminalView } from './components/terminal/TerminalView';
 import { ContainersTable } from './components/docker/ContainersTable';
+import { SftpExplorer } from './components/sftp/SftpExplorer';
 import { Server as ServerIcon, Plus } from 'lucide-react';
 
 export function App() {
@@ -147,6 +148,9 @@ export function App() {
                 )}
                 {activeTab === 'containers' && (
                   <ContainersTable key={activeServer.id} server={activeServer} />
+                )}
+                {activeTab === 'sftp' && (
+                  <SftpExplorer key={activeServer.id} server={activeServer} />
                 )}
               </div>
             </>

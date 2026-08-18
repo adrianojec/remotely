@@ -168,3 +168,123 @@ export async function fetchContainerLogs(serverId: string, containerId: string):
   return res.json();
 }
 
+/* ==================== SFTP API Methods ==================== */
+
+export async function fetchSftpDirectory(serverId: string, remotePath?: string): Promise<{ currentPath: string; items: import('../types').SftpItem[] }> {
+  const url = remotePath ? `${API_BASE}/servers/${serverId}/sftp/list?path=${encodeURIComponent(remotePath)}` : `${API_BASE}/servers/${serverId}/sftp/list`;
+  
+  const res = await fetch(url);
+  const data = await res.json();
+  
+  if (!res.ok || !data.success) {
+    throw new Error(data.message || 'Failed to list remote directory');
+  }
+
+  return { currentPath: data.currentPath, items: data.items };
+}
+
+export async function readSftpFile(serverId: string, filePath: string): Promise<{ content: string; size: number }> {
+  const res = await fetch(`${API_BASE}/servers/${serverId}/sftp/read?path=${encodeURIComponent(filePath)}`);
+
+  const data = await res.json();
+
+  if (!res.ok || !data.success) {
+    throw new Error(data.message || 'Failed to read file');
+  }
+
+  return { content: data.content, size: data.size };
+}
+
+export async function writeSftpFile(serverId: string, filePath: string, content: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/servers/${serverId}/sftp/write`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ path: filePath, content }),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok || !data.success) {
+    throw new Error(data.message || 'Failed to save file');
+  }
+}
+
+export function getSftpDownloadUrl(serverId: string, filePath: string): string {
+  return `${API_BASE}/servers/${serverId}/sftp/download?path=${encodeURIComponent(filePath)}`;
+}
+
+export async function uploadSftpFile(serverId: string, targetPath: string, file: File): Promise<void> {
+  const formData = new FormData();
+  
+  formData.append('path', targetPath);
+  formData.append('file', file);
+
+  const res = await fetch(`${API_BASE}/servers/${serverId}/sftp/upload`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  const data = await res.json();
+
+  if (!res.ok || !data.success) {
+    throw new Error(data.message || 'Failed to upload file');
+  }
+}
+
+export async function createSftpDirectory(serverId: string, dirPath: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/servers/${serverId}/sftp/mkdir`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ path: dirPath }),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok || !data.success) {
+    throw new Error(data.message || 'Failed to create directory');
+  }
+}
+
+export async function createSftpFile(serverId: string, filePath: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/servers/${serverId}/sftp/touch`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ path: filePath }),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok || !data.success) {
+    throw new Error(data.message || 'Failed to create file');
+  }
+}
+
+export async function deleteSftpItem(serverId: string, itemPath: string, isDirectory: boolean): Promise<void> {
+  const res = await fetch(`${API_BASE}/servers/${serverId}/sftp/delete`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ path: itemPath, isDirectory }),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok || !data.success) {
+    throw new Error(data.message || 'Failed to delete item');
+  }
+}
+
+export async function renameSftpItem(serverId: string, oldPath: string, newPath: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/servers/${serverId}/sftp/rename`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ oldPath, newPath }),
+  });
+
+  const data = await res.json();
+  
+  if (!res.ok || !data.success) {
+    throw new Error(data.message || 'Failed to rename item');
+  }
+}
+
+
