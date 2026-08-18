@@ -20,7 +20,7 @@ export function getServerCredentials(server: ServerRecord): SshCredentials {
 
 // GET all servers (sanitized: hides encrypted/plain credentials)
 serversRouter.get('/', (c) => {
-  const stmt = db.prepare('SELECT id, name, host, port, username, auth_type, group_id, created_at, updated_at FROM servers ORDER BY created_at DESC');
+  const stmt = db.prepare('SELECT id, name, host, port, username, auth_type, group_id, desktop_protocol, desktop_port, desktop_width, desktop_height, created_at, updated_at FROM servers ORDER BY created_at DESC');
   const servers = stmt.all();
   return c.json({ success: true, servers });
 });
@@ -28,7 +28,7 @@ serversRouter.get('/', (c) => {
 // GET single server
 serversRouter.get('/:id', (c) => {
   const id = c.req.param('id');
-  const stmt = db.prepare('SELECT id, name, host, port, username, auth_type, group_id, created_at, updated_at FROM servers WHERE id = ?');
+  const stmt = db.prepare('SELECT id, name, host, port, username, auth_type, group_id, desktop_protocol, desktop_port, desktop_width, desktop_height, created_at, updated_at FROM servers WHERE id = ?');
   const server = stmt.get(id);
 
   if (!server) {
@@ -76,7 +76,7 @@ serversRouter.post('/:id/test', async (c) => {
 // POST create server
 serversRouter.post('/', async (c) => {
   const body = await c.req.json();
-  const { name, host, port, username, authType, credential, groupId } = body;
+  const { name, host, port, username, authType, credential, groupId, desktopProtocol, desktopPort, desktopWidth, desktopHeight } = body;
 
   if (!name || !host || !username || !authType || !credential) {
     return c.json({ success: false, message: 'Missing required fields' }, 400);
@@ -85,13 +85,17 @@ serversRouter.post('/', async (c) => {
   const id = crypto.randomUUID();
   const credentialEncrypted = encrypt(credential);
   const validGroupId = groupId && typeof groupId === 'string' && groupId.trim() !== '' ? groupId.trim() : null;
+  const protocol = desktopProtocol || 'rdp';
+  const dPort = Number(desktopPort) || (protocol === 'vnc' ? 5900 : 3389);
+  const dWidth = Number(desktopWidth) || 1920;
+  const dHeight = Number(desktopHeight) || 1080;
 
   const stmt = db.prepare(`
-    INSERT INTO servers (id, name, host, port, username, auth_type, credential_encrypted, group_id)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO servers (id, name, host, port, username, auth_type, credential_encrypted, group_id, desktop_protocol, desktop_port, desktop_width, desktop_height)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
-  stmt.run(id, name, host, Number(port) || 22, username, authType, credentialEncrypted, validGroupId);
+  stmt.run(id, name, host, Number(port) || 22, username, authType, credentialEncrypted, validGroupId, protocol, dPort, dWidth, dHeight);
 
   return c.json({
     success: true,
@@ -103,6 +107,10 @@ serversRouter.post('/', async (c) => {
       username,
       auth_type: authType,
       group_id: validGroupId,
+      desktop_protocol: protocol,
+      desktop_port: dPort,
+      desktop_width: dWidth,
+      desktop_height: dHeight,
     },
   });
 });
@@ -111,7 +119,7 @@ serversRouter.post('/', async (c) => {
 serversRouter.put('/:id', async (c) => {
   const id = c.req.param('id');
   const body = await c.req.json();
-  const { name, host, port, username, authType, credential, groupId } = body;
+  const { name, host, port, username, authType, credential, groupId, desktopProtocol, desktopPort, desktopWidth, desktopHeight } = body;
 
   const checkStmt = db.prepare('SELECT * FROM servers WHERE id = ?');
   const existing = checkStmt.get(id) as ServerRecord | undefined;
@@ -136,9 +144,14 @@ serversRouter.put('/:id', async (c) => {
     }
   }
 
+  const protocol = desktopProtocol || existing.desktop_protocol || 'rdp';
+  const dPort = Number(desktopPort) || existing.desktop_port || (protocol === 'vnc' ? 5900 : 3389);
+  const dWidth = Number(desktopWidth) || existing.desktop_width || 1920;
+  const dHeight = Number(desktopHeight) || existing.desktop_height || 1080;
+
   const updateStmt = db.prepare(`
     UPDATE servers
-    SET name = ?, host = ?, port = ?, username = ?, auth_type = ?, credential_encrypted = ?, group_id = ?, updated_at = CURRENT_TIMESTAMP
+    SET name = ?, host = ?, port = ?, username = ?, auth_type = ?, credential_encrypted = ?, group_id = ?, desktop_protocol = ?, desktop_port = ?, desktop_width = ?, desktop_height = ?, updated_at = CURRENT_TIMESTAMP
     WHERE id = ?
   `);
 
@@ -150,6 +163,10 @@ serversRouter.put('/:id', async (c) => {
     authType,
     credentialEncrypted,
     validGroupId,
+    protocol,
+    dPort,
+    dWidth,
+    dHeight,
     id
   );
 
@@ -161,6 +178,10 @@ serversRouter.put('/:id', async (c) => {
     username,
     auth_type: authType,
     group_id: validGroupId,
+    desktop_protocol: protocol,
+    desktop_port: dPort,
+    desktop_width: dWidth,
+    desktop_height: dHeight,
   };
 
   return c.json({ success: true, server: updatedServer });

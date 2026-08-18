@@ -8,6 +8,7 @@ import { groupsRouter } from './routes/groups.js';
 import { dockerRouter } from './routes/docker.js';
 import { sftpRouter } from './routes/sftp.js';
 import { handleTerminalWebSocket } from './routes/terminal.js';
+import { handleDesktopWebSocket } from './routes/desktop.js';
 
 dotenv.config();
 
@@ -32,6 +33,19 @@ app.get(
     return {
       onOpen(evt, ws) {
         handleTerminalWebSocket(ws, reqUrl);
+      },
+    };
+  })
+);
+
+// WebSocket route for Remote Desktop (Guacamole)
+app.get(
+  '/ws/desktop',
+  upgradeWebSocket((c) => {
+    const reqUrl = c.req.url;
+    return {
+      onOpen(evt, ws) {
+        handleDesktopWebSocket(ws, reqUrl);
       },
     };
   })

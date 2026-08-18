@@ -86,6 +86,8 @@ export async function addServer(payload: {
   authType: 'password' | 'privateKey';
   credential: string;
   groupId?: string | null;
+  desktopProtocol?: 'rdp' | 'vnc';
+  desktopPort?: number;
 }): Promise<Server> {
   const res = await fetch(`${API_BASE}/servers`, {
     method: 'POST',
@@ -109,6 +111,8 @@ export async function updateServer(
     authType: 'password' | 'privateKey';
     credential?: string;
     groupId?: string | null;
+    desktopProtocol?: 'rdp' | 'vnc';
+    desktopPort?: number;
   }
 ): Promise<Server> {
   const res = await fetch(`${API_BASE}/servers/${id}`, {

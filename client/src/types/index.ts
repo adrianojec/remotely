@@ -13,6 +13,10 @@ export interface Server {
   username: string;
   auth_type: 'password' | 'privateKey';
   group_id?: string | null;
+  desktop_protocol?: 'rdp' | 'vnc' | 'ssh' | null;
+  desktop_port?: number | null;
+  desktop_width?: number | null;
+  desktop_height?: number | null;
   created_at?: string;
   updated_at?: string;
 }
@@ -39,5 +43,5 @@ export interface SftpItem {
   modifiedAt: string;
 }
 
-export type TabType = 'terminal' | 'containers' | 'sftp';
+export type TabType = 'terminal' | 'containers' | 'sftp' | 'desktop';
 
