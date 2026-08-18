@@ -1,6 +1,9 @@
 import Database from 'better-sqlite3';
 import path from 'node:path';
 import dotenv from 'dotenv';
+import { AuthType, RdpProtocol, RdpSecurity } from './enums.js';
+
+export * from './enums.js';
 
 dotenv.config();
 
@@ -29,12 +32,12 @@ db.exec(`
     credential_encrypted TEXT NOT NULL,
     group_id TEXT,
     rdp_enabled INTEGER DEFAULT 1,
-    rdp_protocol TEXT DEFAULT 'rdp',
+    rdp_protocol TEXT DEFAULT '${RdpProtocol.RDP}',
     rdp_port INTEGER DEFAULT 3389,
     rdp_username TEXT,
     rdp_password_encrypted TEXT,
     rdp_domain TEXT,
-    rdp_security TEXT DEFAULT 'any',
+    rdp_security TEXT DEFAULT '${RdpSecurity.ANY}',
     rdp_ignore_cert INTEGER DEFAULT 1,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
@@ -53,7 +56,7 @@ if (!hasColumn('rdp_enabled')) {
   db.exec('ALTER TABLE servers ADD COLUMN rdp_enabled INTEGER DEFAULT 1;');
 }
 if (!hasColumn('rdp_protocol')) {
-  db.exec("ALTER TABLE servers ADD COLUMN rdp_protocol TEXT DEFAULT 'rdp';");
+  db.exec(`ALTER TABLE servers ADD COLUMN rdp_protocol TEXT DEFAULT '${RdpProtocol.RDP}';`);
 }
 if (!hasColumn('rdp_port')) {
   db.exec('ALTER TABLE servers ADD COLUMN rdp_port INTEGER DEFAULT 3389;');
@@ -68,7 +71,7 @@ if (!hasColumn('rdp_domain')) {
   db.exec('ALTER TABLE servers ADD COLUMN rdp_domain TEXT;');
 }
 if (!hasColumn('rdp_security')) {
-  db.exec("ALTER TABLE servers ADD COLUMN rdp_security TEXT DEFAULT 'any';");
+  db.exec(`ALTER TABLE servers ADD COLUMN rdp_security TEXT DEFAULT '${RdpSecurity.ANY}';`);
 }
 if (!hasColumn('rdp_ignore_cert')) {
   db.exec('ALTER TABLE servers ADD COLUMN rdp_ignore_cert INTEGER DEFAULT 1;');
@@ -87,16 +90,16 @@ export interface ServerRecord {
   host: string;
   port: number;
   username: string;
-  auth_type: 'password' | 'privateKey';
+  auth_type: AuthType;
   credential_encrypted: string;
   group_id?: string | null;
   rdp_enabled?: number;
-  rdp_protocol?: 'rdp' | 'vnc';
+  rdp_protocol?: RdpProtocol;
   rdp_port?: number;
   rdp_username?: string | null;
   rdp_password_encrypted?: string | null;
   rdp_domain?: string | null;
-  rdp_security?: 'any' | 'nla' | 'rdp' | 'tls';
+  rdp_security?: RdpSecurity;
   rdp_ignore_cert?: number;
   created_at?: string;
   updated_at?: string;

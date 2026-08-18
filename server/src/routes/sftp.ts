@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { db, ServerRecord } from '../db/index.js';
+import { db, ServerRecord, HttpStatus } from '../db/index.js';
 import { getServerCredentials } from './servers.js';
 import {
   listSftpDirectory,
@@ -38,7 +38,7 @@ sftpRouter.get('/:id/sftp/list', async (c) => {
 
     return c.json({ success: true, ...result });
   } catch (err: any) {
-    return c.json({ success: false, message: err.message || 'Failed to list directory' }, 500);
+    return c.json({ success: false, message: err.message || 'Failed to list directory' }, HttpStatus.INTERNAL_SERVER_ERROR);
   }
 });
 
@@ -48,7 +48,7 @@ sftpRouter.get('/:id/sftp/read', async (c) => {
   const filePath = c.req.query('path');
 
   if (!filePath) {
-    return c.json({ success: false, message: 'File path parameter is required' }, 400);
+    return c.json({ success: false, message: 'File path parameter is required' }, HttpStatus.BAD_REQUEST);
   }
 
   try {
@@ -57,7 +57,7 @@ sftpRouter.get('/:id/sftp/read', async (c) => {
 
     return c.json({ success: true, ...fileData });
   } catch (err: any) {
-    return c.json({ success: false, message: err.message || 'Failed to read file' }, 500);
+    return c.json({ success: false, message: err.message || 'Failed to read file' }, HttpStatus.INTERNAL_SERVER_ERROR);
   }
 });
 
@@ -68,7 +68,7 @@ sftpRouter.post('/:id/sftp/write', async (c) => {
   const { path: filePath, content } = body;
 
   if (!filePath || content === undefined) {
-    return c.json({ success: false, message: 'Path and content are required' }, 400);
+    return c.json({ success: false, message: 'Path and content are required' }, HttpStatus.BAD_REQUEST);
   }
 
   try {
@@ -77,7 +77,7 @@ sftpRouter.post('/:id/sftp/write', async (c) => {
 
     return c.json({ success: true, message: 'File saved successfully' });
   } catch (err: any) {
-    return c.json({ success: false, message: err.message || 'Failed to write file' }, 500);
+    return c.json({ success: false, message: err.message || 'Failed to write file' }, HttpStatus.INTERNAL_SERVER_ERROR);
   }
 });
 
@@ -87,7 +87,7 @@ sftpRouter.get('/:id/sftp/download', async (c) => {
   const filePath = c.req.query('path');
 
   if (!filePath) {
-    return c.json({ success: false, message: 'File path parameter is required' }, 400);
+    return c.json({ success: false, message: 'File path parameter is required' }, HttpStatus.BAD_REQUEST);
   }
 
   try {
@@ -99,7 +99,7 @@ sftpRouter.get('/:id/sftp/download', async (c) => {
 
     return c.body(new Uint8Array(data));
   } catch (err: any) {
-    return c.json({ success: false, message: err.message || 'Failed to download file' }, 500);
+    return c.json({ success: false, message: err.message || 'Failed to download file' }, HttpStatus.INTERNAL_SERVER_ERROR);
   }
 });
 
@@ -113,7 +113,7 @@ sftpRouter.post('/:id/sftp/upload', async (c) => {
     const file = body['file'] as File | undefined;
 
     if (!targetPath || !file) {
-      return c.json({ success: false, message: 'Missing upload target path or file' }, 400);
+      return c.json({ success: false, message: 'Missing upload target path or file' }, HttpStatus.BAD_REQUEST);
     }
 
     const creds = getCredentialsForServer(id);
@@ -128,7 +128,7 @@ sftpRouter.post('/:id/sftp/upload', async (c) => {
 
     return c.json({ success: true, message: 'File uploaded successfully', path: fullRemotePath });
   } catch (err: any) {
-    return c.json({ success: false, message: err.message || 'Failed to upload file' }, 500);
+    return c.json({ success: false, message: err.message || 'Failed to upload file' }, HttpStatus.INTERNAL_SERVER_ERROR);
   }
 });
 
@@ -139,7 +139,7 @@ sftpRouter.post('/:id/sftp/mkdir', async (c) => {
   const { path: dirPath } = body;
 
   if (!dirPath) {
-    return c.json({ success: false, message: 'Directory path is required' }, 400);
+    return c.json({ success: false, message: 'Directory path is required' }, HttpStatus.BAD_REQUEST);
   }
 
   try {
@@ -149,7 +149,7 @@ sftpRouter.post('/:id/sftp/mkdir', async (c) => {
 
     return c.json({ success: true, message: 'Directory created successfully' });
   } catch (err: any) {
-    return c.json({ success: false, message: err.message || 'Failed to create directory' }, 500);
+    return c.json({ success: false, message: err.message || 'Failed to create directory' }, HttpStatus.INTERNAL_SERVER_ERROR);
   }
 });
 
@@ -160,7 +160,7 @@ sftpRouter.post('/:id/sftp/touch', async (c) => {
   const { path: filePath } = body;
 
   if (!filePath) {
-    return c.json({ success: false, message: 'File path is required' }, 400);
+    return c.json({ success: false, message: 'File path is required' }, HttpStatus.BAD_REQUEST);
   }
 
   try {
@@ -170,7 +170,7 @@ sftpRouter.post('/:id/sftp/touch', async (c) => {
 
     return c.json({ success: true, message: 'File created successfully' });
   } catch (err: any) {
-    return c.json({ success: false, message: err.message || 'Failed to create file' }, 500);
+    return c.json({ success: false, message: err.message || 'Failed to create file' }, HttpStatus.INTERNAL_SERVER_ERROR);
   }
 });
 
@@ -181,7 +181,7 @@ sftpRouter.delete('/:id/sftp/delete', async (c) => {
   const { path: itemPath, isDirectory } = body;
 
   if (!itemPath) {
-    return c.json({ success: false, message: 'Item path is required' }, 400);
+    return c.json({ success: false, message: 'Item path is required' }, HttpStatus.BAD_REQUEST);
   }
 
   try {
@@ -191,7 +191,7 @@ sftpRouter.delete('/:id/sftp/delete', async (c) => {
 
     return c.json({ success: true, message: 'Item deleted successfully' });
   } catch (err: any) {
-    return c.json({ success: false, message: err.message || 'Failed to delete item' }, 500);
+    return c.json({ success: false, message: err.message || 'Failed to delete item' }, HttpStatus.INTERNAL_SERVER_ERROR);
   }
 });
 
@@ -202,7 +202,7 @@ sftpRouter.post('/:id/sftp/rename', async (c) => {
   const { oldPath, newPath } = body;
 
   if (!oldPath || !newPath) {
-    return c.json({ success: false, message: 'Old path and new path are required' }, 400);
+    return c.json({ success: false, message: 'Old path and new path are required' }, HttpStatus.BAD_REQUEST);
   }
 
   try {
@@ -212,6 +212,6 @@ sftpRouter.post('/:id/sftp/rename', async (c) => {
     
     return c.json({ success: true, message: 'Item renamed successfully' });
   } catch (err: any) {
-    return c.json({ success: false, message: err.message || 'Failed to rename item' }, 500);
+    return c.json({ success: false, message: err.message || 'Failed to rename item' }, HttpStatus.INTERNAL_SERVER_ERROR);
   }
 });

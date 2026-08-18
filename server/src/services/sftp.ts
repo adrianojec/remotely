@@ -29,14 +29,17 @@ function getSftpSession(creds: SshCredentials): Promise<{ conn: Client; sftp: SF
       conn.sftp((err, sftp) => {
         if (err) {
           conn.end();
+
           return reject(err);
         }
+
         resolve({ conn, sftp });
       });
     });
 
     conn.on('error', (err) => {
       conn.end();
+
       reject(err);
     });
 
@@ -110,6 +113,7 @@ export async function listSftpDirectory(creds: SshCredentials, targetPath?: stri
           .sort((a, b) => {
             if (a.isDirectory && !b.isDirectory) return -1;
             if (!a.isDirectory && b.isDirectory) return 1;
+
             return a.name.localeCompare(b.name);
           });
 
@@ -136,6 +140,7 @@ export async function readSftpFile(creds: SshCredentials, remotePath: string): P
     sftp.stat(cleanPath, (err, stats) => {
       if (err) {
         conn.end();
+        
         return reject(err);
       }
 

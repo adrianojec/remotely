@@ -13,6 +13,7 @@ export function encrypt(text: string): string {
   
   let encrypted = cipher.update(text, 'utf8', 'hex');
   encrypted += cipher.final('hex');
+
   const authTag = cipher.getAuthTag().toString('hex');
   
   // Return IV:AuthTag:Encrypted
@@ -21,6 +22,7 @@ export function encrypt(text: string): string {
 
 export function decrypt(cipherText: string): string {
   const parts = cipherText.split(':');
+
   if (parts.length !== 3) {
     throw new Error('Invalid ciphertext format');
   }
@@ -31,6 +33,7 @@ export function decrypt(cipherText: string): string {
   const decipher = crypto.createDecipheriv('aes-256-gcm', KEY, iv);
   
   decipher.setAuthTag(authTag);
+  
   let decrypted = decipher.update(encryptedHex, 'hex', 'utf8');
   decrypted += decipher.final('utf8');
   

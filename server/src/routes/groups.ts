@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { db, GroupRecord } from '../db/index.js';
+import { db, GroupRecord, HttpStatus } from '../db/index.js';
 import crypto from 'node:crypto';
 
 export const groupsRouter = new Hono();
@@ -8,6 +8,7 @@ export const groupsRouter = new Hono();
 groupsRouter.get('/', (c) => {
   const stmt = db.prepare('SELECT id, name, created_at, updated_at FROM server_groups ORDER BY name ASC');
   const groups = stmt.all() as GroupRecord[];
+
   return c.json({ success: true, groups });
 });
 
@@ -17,15 +18,16 @@ groupsRouter.post('/', async (c) => {
   const { name } = body;
 
   if (!name || typeof name !== 'string' || !name.trim()) {
-    return c.json({ success: false, message: 'Group name is required' }, 400);
+    return c.json({ success: false, message: 'Group name is required' }, HttpStatus.BAD_REQUEST);
   }
 
   const trimmedName = name.trim();
 
   // Check uniqueness
   const existing = db.prepare('SELECT id FROM server_groups WHERE LOWER(name) = LOWER(?)').get(trimmedName);
+  
   if (existing) {
-    return c.json({ success: false, message: 'A group with this name already exists' }, 400);
+    return c.json({ success: false, message: 'A group with this name already exists' }, HttpStatus.BAD_REQUEST);
   }
 
   const id = crypto.randomUUID();
@@ -48,7 +50,7 @@ groupsRouter.delete('/:id', (c) => {
   const group = groupStmt.get(id) as GroupRecord | undefined;
 
   if (!group) {
-    return c.json({ success: false, message: 'Group not found' }, 404);
+    return c.json({ success: false, message: 'Group not found' }, HttpStatus.NOT_FOUND);
   }
 
   // Execute deletion of contained servers and group in transaction

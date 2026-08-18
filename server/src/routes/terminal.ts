@@ -46,8 +46,10 @@ export function handleTerminalWebSocket(wsContext: any, reqUrl: string) {
 
   if (!serverId) {
     console.warn('[WS Terminal] Missing serverId param');
+
     safeSend({ type: 'error', data: 'Missing serverId parameter\r\n' });
     safeClose();
+
     return;
   }
 
@@ -56,8 +58,10 @@ export function handleTerminalWebSocket(wsContext: any, reqUrl: string) {
 
   if (!server) {
     console.warn(`[WS Terminal] Server not found in database: id=${serverId}`);
+
     safeSend({ type: 'error', data: `Server not found: ${serverId}\r\n` });
     safeClose();
+
     return;
   }
 
@@ -70,13 +74,17 @@ export function handleTerminalWebSocket(wsContext: any, reqUrl: string) {
 
   sshClient.on('ready', () => {
     console.log(`[WS Terminal] SSH Connection READY for ${server.name}`);
+
     safeSend({ type: 'status', data: `Connected to ${server.username}@${server.host}:${server.port}\r\n` });
 
     sshClient.shell({ term: 'xterm-256color', cols, rows }, (err, ptyStream) => {
       if (err) {
         console.error(`[WS Terminal] SSH PTY Shell Error: ${err.message}`);
+
         safeSend({ type: 'error', data: `SSH PTY Error: ${err.message}\r\n` });
+
         sshClient.end();
+
         return;
       }
 
@@ -88,8 +96,10 @@ export function handleTerminalWebSocket(wsContext: any, reqUrl: string) {
 
       stream.on('close', () => {
         console.log(`[WS Terminal] PTY stream closed for ${server.name}`);
+
         safeSend({ type: 'status', data: '\r\nSSH session closed.\r\n' });
         safeClose();
+
         sshClient.end();
       });
     });
@@ -97,6 +107,7 @@ export function handleTerminalWebSocket(wsContext: any, reqUrl: string) {
 
   sshClient.on('error', (err) => {
     console.error(`[WS Terminal] SSH Client Error for ${server.name}:`, err.message);
+
     safeSend({ type: 'error', data: `SSH Connection Error: ${err.message}\r\n` });
     safeClose();
   });
@@ -105,6 +116,7 @@ export function handleTerminalWebSocket(wsContext: any, reqUrl: string) {
     ws.on('message', (message: any) => {
       try {
         const msg = JSON.parse(message.toString());
+
         if (msg.type === 'input' && stream) {
           stream.write(msg.data);
         } else if (msg.type === 'resize' && stream) {
@@ -120,6 +132,7 @@ export function handleTerminalWebSocket(wsContext: any, reqUrl: string) {
 
     ws.on('close', () => {
       console.log(`[WS Terminal] Client disconnected WS for ${server.name}`);
+
       if (stream) {
         try {
           stream.end();
@@ -127,6 +140,7 @@ export function handleTerminalWebSocket(wsContext: any, reqUrl: string) {
           // Ignore
         }
       }
+
       try {
         sshClient.end();
       } catch {
@@ -141,6 +155,7 @@ export function handleTerminalWebSocket(wsContext: any, reqUrl: string) {
     sshClient.connect(config);
   } catch (err: any) {
     console.error(`[WS Terminal] Connection init exception: ${err.message}`);
+    
     safeSend({ type: 'error', data: `Connection failed: ${err.message}\r\n` });
     safeClose();
   }

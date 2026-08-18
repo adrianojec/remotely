@@ -1,13 +1,14 @@
 import net from 'node:net';
+import { RdpProtocol, RdpSecurity } from '../db/index.js';
 
 export interface GuacConnectionOptions {
-  protocol: 'rdp' | 'vnc';
+  protocol: RdpProtocol;
   hostname: string;
   port: number;
   username?: string;
   password?: string;
   domain?: string;
-  security?: string;
+  security?: RdpSecurity | string;
   ignoreCert?: boolean;
   width?: number;
   height?: number;
@@ -198,7 +199,7 @@ export function connectGuacd(
             case 'domain':
               return options.domain || '';
             case 'security':
-              return options.security || 'any';
+              return options.security || RdpSecurity.ANY;
             case 'ignore-cert':
               return options.ignoreCert ? 'true' : 'false';
             case 'width':

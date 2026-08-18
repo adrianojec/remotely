@@ -1,10 +1,11 @@
 import { Client, ConnectConfig } from 'ssh2';
+import { AuthType } from '../db/enums.js';
 
 export interface SshCredentials {
   host: string;
   port: number;
   username: string;
-  authType: 'password' | 'privateKey';
+  authType: AuthType | string;
   credential: string; // Plaintext password or private key
 }
 
@@ -16,7 +17,7 @@ export function buildSshConfig(creds: SshCredentials): ConnectConfig {
     readyTimeout: 10000,
   };
 
-  if (creds.authType === 'password') {
+  if (creds.authType === AuthType.PASSWORD) {
     config.password = creds.credential;
   } else {
     config.privateKey = creds.credential;
@@ -57,6 +58,7 @@ export async function executeSshCommand(creds: SshCredentials, command: string):
       conn.exec(command, (err, stream) => {
         if (err) {
           conn.end();
+          
           return reject(err);
         }
 

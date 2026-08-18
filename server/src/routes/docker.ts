@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
-import { db, ServerRecord } from '../db/index.js';
+import { db, ServerRecord, HttpStatus } from '../db/index.js';
 import { getServerCredentials } from './servers.js';
-import { listDockerContainers, handleDockerAction, fetchDockerLogs } from '../services/docker.js';
+import { listDockerContainers, handleDockerAction, fetchDockerLogs, DockerAction } from '../services/docker.js';
 
 export const dockerRouter = new Hono();
 
@@ -12,7 +12,7 @@ dockerRouter.get('/:id/containers', async (c) => {
   const server = stmt.get(id) as ServerRecord | undefined;
 
   if (!server) {
-    return c.json({ success: false, message: 'Server not found' }, 404);
+    return c.json({ success: false, message: 'Server not found' }, HttpStatus.NOT_FOUND);
   }
 
   const creds = getServerCredentials(server);
@@ -28,14 +28,14 @@ dockerRouter.post('/:id/action', async (c) => {
   const { containerId, action } = body;
 
   if (!containerId || !action) {
-    return c.json({ success: false, message: 'Container ID and action are required' }, 400);
+    return c.json({ success: false, message: 'Container ID and action are required' }, HttpStatus.BAD_REQUEST);
   }
 
   const stmt = db.prepare('SELECT * FROM servers WHERE id = ?');
   const server = stmt.get(id) as ServerRecord | undefined;
 
   if (!server) {
-    return c.json({ success: false, message: 'Server not found' }, 404);
+    return c.json({ success: false, message: 'Server not found' }, HttpStatus.NOT_FOUND);
   }
 
   const creds = getServerCredentials(server);
@@ -52,14 +52,14 @@ dockerRouter.get('/:id/logs', async (c) => {
   const tail = tailStr ? parseInt(tailStr, 10) : 100;
 
   if (!containerId) {
-    return c.json({ success: false, message: 'Container ID query param is required' }, 400);
+    return c.json({ success: false, message: 'Container ID query param is required' }, HttpStatus.BAD_REQUEST);
   }
 
   const stmt = db.prepare('SELECT * FROM servers WHERE id = ?');
   const server = stmt.get(id) as ServerRecord | undefined;
 
   if (!server) {
-    return c.json({ success: false, message: 'Server not found' }, 404);
+    return c.json({ success: false, message: 'Server not found' }, HttpStatus.NOT_FOUND);
   }
 
   const creds = getServerCredentials(server);

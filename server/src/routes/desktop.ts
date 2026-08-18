@@ -1,4 +1,4 @@
-import { db, ServerRecord } from '../db/index.js';
+import { db, ServerRecord, AuthType, RdpProtocol, RdpSecurity } from '../db/index.js';
 import { decrypt } from '../utils/crypto.js';
 import { connectGuacd, encodeGuacInstruction } from '../services/guacd.js';
 
@@ -13,6 +13,7 @@ export function handleDesktopWebSocket(wsContext: any, reqUrl: string) {
   const safeSend = (opcode: string, ...args: string[]) => {
     try {
       const msg = encodeGuacInstruction(opcode, ...args);
+
       if (wsContext.send) wsContext.send(msg);
       else if (ws.send) ws.send(msg);
     } catch {
@@ -31,8 +32,10 @@ export function handleDesktopWebSocket(wsContext: any, reqUrl: string) {
 
   if (!serverId) {
     console.warn('[WS Desktop] Missing serverId parameter');
+
     safeSend('error', 'Missing serverId parameter', '512');
     safeClose();
+
     return;
   }
 
@@ -41,13 +44,15 @@ export function handleDesktopWebSocket(wsContext: any, reqUrl: string) {
 
   if (!server) {
     console.warn(`[WS Desktop] Server not found in database: id=${serverId}`);
+
     safeSend('error', `Server not found: ${serverId}`, '512');
     safeClose();
+    
     return;
   }
 
-  const protocol = (server.rdp_protocol || 'rdp') as 'rdp' | 'vnc';
-  const defaultPort = protocol === 'vnc' ? 5900 : 3389;
+  const protocol = server.rdp_protocol || RdpProtocol.RDP;
+  const defaultPort = protocol === RdpProtocol.VNC ? 5900 : 3389;
   const port = server.rdp_port || defaultPort;
 
   // Resolve username
@@ -55,13 +60,14 @@ export function handleDesktopWebSocket(wsContext: any, reqUrl: string) {
 
   // Resolve password
   let password = '';
+  
   if (server.rdp_password_encrypted) {
     try {
       password = decrypt(server.rdp_password_encrypted);
     } catch (err: any) {
       console.warn(`[WS Desktop] Failed to decrypt rdp_password for ${server.name}: ${err.message}`);
     }
-  } else if (server.auth_type === 'password' && server.credential_encrypted) {
+  } else if (server.auth_type === AuthType.PASSWORD && server.credential_encrypted) {
     try {
       password = decrypt(server.credential_encrypted);
     } catch (err: any) {
@@ -79,7 +85,7 @@ export function handleDesktopWebSocket(wsContext: any, reqUrl: string) {
       username,
       password,
       domain: server.rdp_domain || undefined,
-      security: server.rdp_security || 'any',
+      security: server.rdp_security || RdpSecurity.ANY,
       ignoreCert: server.rdp_ignore_cert !== 0,
       width,
       height,
