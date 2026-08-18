@@ -1,0 +1,42 @@
+name: remotely
+
+services:
+  # Guacamole Remote Desktop Gateway Daemon
+  guacd:
+    image: guacamole/guacd:latest
+    container_name: remotely-guacd
+    restart: unless-stopped
+
+  # Remotely Backend Node API & WebSocket Gateway
+  server:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    container_name: remotely-server
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - DATABASE_PATH=/app/data/remotely.db
+      - GUACD_HOST=guacd
+      - GUACD_PORT=4822
+    volumes:
+      - remotely-data:/app/data
+    depends_on:
+      - guacd
+
+  # Remotely Web Dashboard (React + Vite served via Nginx Reverse Proxy)
+  client:
+    build:
+      context: .
+      dockerfile: client/Dockerfile
+    container_name: remotely-client
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - server
+
+volumes:
+  remotely-data:
