@@ -207,12 +207,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const ungroupedServers = filteredServers.filter((s) => !s.group_id);
 
   return (
-    <aside className="w-72 bg-[#181818] border-r border-[#2b2b2b] flex flex-col h-full z-10 select-none">
+    <aside className="w-80 bg-[#181818] border-r border-[#2b2b2b] flex flex-col h-full z-10 select-none">
       {/* Header & Add Buttons */}
       <div className="p-3.5 border-b border-[#2b2b2b] flex items-center justify-between gap-2">
-        <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5 truncate">
+        <span className="text-xs font-semibold uppercase tracking-wide text-slate-400 flex items-center gap-1.5 min-w-0 truncate">
           <ServerIcon className="w-4 h-4 text-sky-400 flex-shrink-0" />
-          Servers ({servers.length})
+          <span className="truncate">Servers ({servers.length})</span>
         </span>
         <div className="flex items-center gap-1.5">
           <button
