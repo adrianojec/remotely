@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Server, DockerContainer } from '../../types';
+import { Server, DockerContainer, DockerAction } from '../../types';
 import { fetchContainers, containerAction } from '../../services/api';
 import { ContainerLogsModal } from './ContainerLogsModal';
 import { Box, Play, Square, RotateCw, FileText, AlertCircle, RefreshCw, Loader2 } from 'lucide-react';
@@ -38,7 +38,7 @@ export const ContainersTable: React.FC<ContainersTableProps> = ({ server }) => {
     }
   }, [server.id]);
 
-  const handleAction = async (containerId: string, action: 'start' | 'stop' | 'restart') => {
+  const handleAction = async (containerId: string, action: DockerAction) => {
     setActionId(containerId);
     try {
       const res = await containerAction(server.id, containerId, action);
@@ -168,7 +168,7 @@ export const ContainersTable: React.FC<ContainersTableProps> = ({ server }) => {
                       <div className="flex items-center justify-end gap-1">
                         {isRunning ? (
                           <button
-                            onClick={() => handleAction(c.ID, 'stop')}
+                            onClick={() => handleAction(c.ID, DockerAction.STOP)}
                             disabled={isActioning}
                             className="p-1 rounded bg-slate-800 hover:bg-rose-900/40 text-slate-400 hover:text-rose-300 border border-slate-700/50 transition-colors"
                             title="Stop Container"
@@ -177,7 +177,7 @@ export const ContainersTable: React.FC<ContainersTableProps> = ({ server }) => {
                           </button>
                         ) : (
                           <button
-                            onClick={() => handleAction(c.ID, 'start')}
+                            onClick={() => handleAction(c.ID, DockerAction.START)}
                             disabled={isActioning}
                             className="p-1 rounded bg-slate-800 hover:bg-emerald-900/40 text-slate-400 hover:text-emerald-300 border border-slate-700/50 transition-colors"
                             title="Start Container"
@@ -187,7 +187,7 @@ export const ContainersTable: React.FC<ContainersTableProps> = ({ server }) => {
                         )}
 
                         <button
-                          onClick={() => handleAction(c.ID, 'restart')}
+                          onClick={() => handleAction(c.ID, DockerAction.RESTART)}
                           disabled={isActioning}
                           className="p-1 rounded bg-zinc-800 hover:bg-sky-900/40 text-slate-400 hover:text-sky-300 border border-zinc-700/50 transition-colors"
                           title="Restart Container"

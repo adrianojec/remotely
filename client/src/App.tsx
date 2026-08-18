@@ -19,7 +19,7 @@ export function App() {
   const [servers, setServers] = useState<Server[]>([]);
   const [groups, setGroups] = useState<ServerGroup[]>([]);
   const [activeServer, setActiveServer] = useState<Server | null>(null);
-  const [activeTab, setActiveTab] = useState<TabType>('terminal');
+  const [activeTab, setActiveTab] = useState<TabType>(TabType.TERMINAL);
   const [loading, setLoading] = useState(true);
 
   // Modals state
@@ -147,16 +147,16 @@ export function App() {
 
               {/* View Content */}
               <div className="flex-1 p-6 overflow-hidden">
-                {activeTab === 'terminal' && (
+                {activeTab === TabType.TERMINAL && (
                   <TerminalView key={activeServer.id} server={activeServer} />
                 )}
-                {activeTab === 'containers' && (
+                {activeTab === TabType.CONTAINERS && (
                   <ContainersTable key={activeServer.id} server={activeServer} />
                 )}
-                {activeTab === 'sftp' && (
+                {activeTab === TabType.SFTP && (
                   <SftpExplorer key={activeServer.id} server={activeServer} />
                 )}
-                {activeTab === 'desktop' && (
+                {activeTab === TabType.DESKTOP && (
                   <RemoteDesktopView
                     key={activeServer.id}
                     server={activeServer}

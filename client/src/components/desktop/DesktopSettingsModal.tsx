@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Server } from '../../types';
+import { Server, RdpProtocol, RdpSecurity } from '../../types';
+import { DEFAULT_RDP_PORT, DEFAULT_VNC_PORT } from '../../constants';
 import { updateDesktopConfig } from '../../services/api';
 import { X, Monitor, Shield, Lock, Eye, EyeOff, Save } from 'lucide-react';
 
@@ -16,13 +17,13 @@ export const DesktopSettingsModal: React.FC<DesktopSettingsModalProps> = ({
   onClose,
   onUpdated,
 }) => {
-  const [protocol, setProtocol] = useState<'rdp' | 'vnc'>('rdp');
-  const [port, setPort] = useState<number>(3389);
+  const [protocol, setProtocol] = useState<RdpProtocol>(RdpProtocol.RDP);
+  const [port, setPort] = useState<number>(DEFAULT_RDP_PORT);
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [domain, setDomain] = useState<string>('');
-  const [security, setSecurity] = useState<'any' | 'nla' | 'rdp' | 'tls'>('any');
+  const [security, setSecurity] = useState<RdpSecurity>(RdpSecurity.ANY);
   const [ignoreCert, setIgnoreCert] = useState<boolean>(true);
 
   const [loading, setLoading] = useState<boolean>(false);
@@ -30,13 +31,13 @@ export const DesktopSettingsModal: React.FC<DesktopSettingsModalProps> = ({
 
   useEffect(() => {
     if (server) {
-      const proto = server.rdp_protocol || 'rdp';
+      const proto = server.rdp_protocol || RdpProtocol.RDP;
       setProtocol(proto);
-      setPort(server.rdp_port || (proto === 'vnc' ? 5900 : 3389));
+      setPort(server.rdp_port || (proto === RdpProtocol.VNC ? DEFAULT_VNC_PORT : DEFAULT_RDP_PORT));
       setUsername(server.rdp_username || '');
       setPassword('');
       setDomain(server.rdp_domain || '');
-      setSecurity(server.rdp_security || 'any');
+      setSecurity(server.rdp_security || RdpSecurity.ANY);
       setIgnoreCert(server.rdp_ignore_cert !== 0);
       setError(null);
     }
@@ -44,10 +45,10 @@ export const DesktopSettingsModal: React.FC<DesktopSettingsModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleProtocolChange = (newProto: 'rdp' | 'vnc') => {
+  const handleProtocolChange = (newProto: RdpProtocol) => {
     setProtocol(newProto);
-    if (port === 3389 || port === 5900) {
-      setPort(newProto === 'vnc' ? 5900 : 3389);
+    if (port === DEFAULT_RDP_PORT || port === DEFAULT_VNC_PORT) {
+      setPort(newProto === RdpProtocol.VNC ? DEFAULT_VNC_PORT : DEFAULT_RDP_PORT);
     }
   };
 
@@ -109,9 +110,9 @@ export const DesktopSettingsModal: React.FC<DesktopSettingsModalProps> = ({
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
-                onClick={() => handleProtocolChange('rdp')}
+                onClick={() => handleProtocolChange(RdpProtocol.RDP)}
                 className={`py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 transition-all ${
-                  protocol === 'rdp'
+                  protocol === RdpProtocol.RDP
                     ? 'border-sky-500 bg-sky-500/10 text-sky-400'
                     : 'border-[#333] bg-[#242424] text-slate-400 hover:text-slate-200'
                 }`}
@@ -120,9 +121,9 @@ export const DesktopSettingsModal: React.FC<DesktopSettingsModalProps> = ({
               </button>
               <button
                 type="button"
-                onClick={() => handleProtocolChange('vnc')}
+                onClick={() => handleProtocolChange(RdpProtocol.VNC)}
                 className={`py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 transition-all ${
-                  protocol === 'vnc'
+                  protocol === RdpProtocol.VNC
                     ? 'border-sky-500 bg-sky-500/10 text-sky-400'
                     : 'border-[#333] bg-[#242424] text-slate-400 hover:text-slate-200'
                 }`}
@@ -141,7 +142,7 @@ export const DesktopSettingsModal: React.FC<DesktopSettingsModalProps> = ({
               type="number"
               value={port}
               onChange={(e) => setPort(Number(e.target.value))}
-              placeholder={protocol === 'vnc' ? '5900' : '3389'}
+              placeholder={protocol === RdpProtocol.VNC ? String(DEFAULT_VNC_PORT) : String(DEFAULT_RDP_PORT)}
               className="w-full bg-[#181818] border border-[#333] rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-sky-500"
               required
             />
@@ -184,7 +185,7 @@ export const DesktopSettingsModal: React.FC<DesktopSettingsModalProps> = ({
             </div>
           </div>
 
-          {protocol === 'rdp' && (
+          {protocol === RdpProtocol.RDP && (
             <>
               {/* Domain */}
               <div>
@@ -200,20 +201,20 @@ export const DesktopSettingsModal: React.FC<DesktopSettingsModalProps> = ({
                 />
               </div>
 
-              {/* RDP Security Mode */}
+              {/* RDP Security Level */}
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1">
                   RDP Security Level
                 </label>
                 <select
                   value={security}
-                  onChange={(e) => setSecurity(e.target.value as any)}
+                  onChange={(e) => setSecurity(e.target.value as RdpSecurity)}
                   className="w-full bg-[#181818] border border-[#333] rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-sky-500"
                 >
-                  <option value="any">Any (Auto-Negotiate Security)</option>
-                  <option value="nla">NLA (Network Level Authentication)</option>
-                  <option value="tls">TLS Encryption</option>
-                  <option value="rdp">Standard RDP Encryption</option>
+                  <option value={RdpSecurity.ANY}>Any (Auto-Negotiate Security)</option>
+                  <option value={RdpSecurity.NLA}>NLA (Network Level Authentication)</option>
+                  <option value={RdpSecurity.TLS}>TLS Encryption</option>
+                  <option value={RdpSecurity.RDP}>Standard RDP Encryption</option>
                 </select>
               </div>
             </>

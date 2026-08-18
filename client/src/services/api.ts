@@ -1,4 +1,4 @@
-import { Server, ServerGroup, DockerContainer } from '../types';
+import { Server, ServerGroup, DockerContainer, AuthType, DockerAction, RdpProtocol, RdpSecurity } from '../types';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
 
@@ -60,7 +60,7 @@ export async function testConnection(payload: {
   host: string;
   port: number;
   username: string;
-  authType: 'password' | 'privateKey';
+  authType: AuthType;
   credential: string;
 }): Promise<{ success: boolean; message: string }> {
   const res = await fetch(`${API_BASE}/servers/test`, {
@@ -83,7 +83,7 @@ export async function addServer(payload: {
   host: string;
   port: number;
   username: string;
-  authType: 'password' | 'privateKey';
+  authType: AuthType;
   credential: string;
   groupId?: string | null;
 }): Promise<Server> {
@@ -106,7 +106,7 @@ export async function updateServer(
     host: string;
     port: number;
     username: string;
-    authType: 'password' | 'privateKey';
+    authType: AuthType;
     credential?: string;
     groupId?: string | null;
   }
@@ -149,7 +149,7 @@ export async function fetchContainers(serverId: string): Promise<{
 export async function containerAction(
   serverId: string,
   containerId: string,
-  action: 'start' | 'stop' | 'restart'
+  action: DockerAction
 ): Promise<{ success: boolean; message: string }> {
   const res = await fetch(`${API_BASE}/servers/${serverId}/action`, {
     method: 'POST',
@@ -292,12 +292,12 @@ export async function renameSftpItem(serverId: string, oldPath: string, newPath:
 export async function updateDesktopConfig(
   serverId: string,
   payload: {
-    rdpProtocol?: 'rdp' | 'vnc';
+    rdpProtocol?: RdpProtocol;
     rdpPort?: number;
     rdpUsername?: string;
     rdpPassword?: string;
     rdpDomain?: string;
-    rdpSecurity?: 'any' | 'nla' | 'rdp' | 'tls';
+    rdpSecurity?: RdpSecurity;
     rdpIgnoreCert?: boolean;
   }
 ): Promise<Server> {

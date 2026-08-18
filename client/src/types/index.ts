@@ -1,3 +1,7 @@
+import { AuthType, RdpProtocol, RdpSecurity, TabType } from './enums';
+
+export * from './enums';
+
 export interface ServerGroup {
   id: string;
   name: string;
@@ -11,14 +15,14 @@ export interface Server {
   host: string;
   port: number;
   username: string;
-  auth_type: 'password' | 'privateKey';
+  auth_type: AuthType;
   group_id?: string | null;
   rdp_enabled?: number;
-  rdp_protocol?: 'rdp' | 'vnc';
+  rdp_protocol?: RdpProtocol;
   rdp_port?: number;
   rdp_username?: string | null;
   rdp_domain?: string | null;
-  rdp_security?: 'any' | 'nla' | 'rdp' | 'tls';
+  rdp_security?: RdpSecurity;
   rdp_ignore_cert?: number;
   created_at?: string;
   updated_at?: string;
@@ -45,7 +49,5 @@ export interface SftpItem {
   mode: number;
   modifiedAt: string;
 }
-
-export type TabType = 'terminal' | 'containers' | 'sftp' | 'desktop';
 
 

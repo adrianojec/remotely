@@ -9,10 +9,10 @@ interface ServerTabsProps {
 
 export const ServerTabs: React.FC<ServerTabsProps> = ({ activeTab, onTabChange }) => {
   const tabs: { id: TabType; label: string; icon: React.ReactNode }[] = [
-    { id: 'terminal', label: 'Interactive Terminal', icon: <Terminal className="w-4 h-4" /> },
-    { id: 'containers', label: 'Docker Containers', icon: <Box className="w-4 h-4" /> },
-    { id: 'sftp', label: 'SFTP Explorer', icon: <FolderTree className="w-4 h-4" /> },
-    { id: 'desktop', label: 'Remote Desktop', icon: <Monitor className="w-4 h-4" /> },
+    { id: TabType.TERMINAL, label: 'Interactive Terminal', icon: <Terminal className="w-4 h-4" /> },
+    { id: TabType.CONTAINERS, label: 'Docker Containers', icon: <Box className="w-4 h-4" /> },
+    { id: TabType.SFTP, label: 'SFTP Explorer', icon: <FolderTree className="w-4 h-4" /> },
+    { id: TabType.DESKTOP, label: 'Remote Desktop', icon: <Monitor className="w-4 h-4" /> },
   ];
 
   return (

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { X, Server, Key, Lock, CheckCircle2, AlertTriangle, Loader2, Folder, Edit3 } from 'lucide-react';
 import { updateServer, testConnection, testStoredServer } from '../../services/api';
-import { Server as ServerType, ServerGroup } from '../../types';
+import { Server as ServerType, ServerGroup, AuthType } from '../../types';
+import { DEFAULT_SSH_PORT } from '../../constants';
 
 interface EditServerModalProps {
   isOpen: boolean;
@@ -20,9 +21,9 @@ export const EditServerModal: React.FC<EditServerModalProps> = ({
 }) => {
   const [name, setName] = useState('');
   const [host, setHost] = useState('');
-  const [port, setPort] = useState('22');
+  const [port, setPort] = useState(String(DEFAULT_SSH_PORT));
   const [username, setUsername] = useState('root');
-  const [authType, setAuthType] = useState<'password' | 'privateKey'>('password');
+  const [authType, setAuthType] = useState<AuthType>(AuthType.PASSWORD);
   const [credential, setCredential] = useState('');
   const [groupId, setGroupId] = useState<string | null>(null);
 
@@ -36,7 +37,7 @@ export const EditServerModal: React.FC<EditServerModalProps> = ({
     if (isOpen && server) {
       setName(server.name);
       setHost(server.host);
-      setPort(String(server.port || 22));
+      setPort(String(server.port || DEFAULT_SSH_PORT));
       setUsername(server.username);
       setAuthType(server.auth_type);
       setCredential('');
@@ -62,7 +63,7 @@ export const EditServerModal: React.FC<EditServerModalProps> = ({
       if (credential && credential.trim() !== '') {
         const res = await testConnection({
           host,
-          port: parseInt(port, 10) || 22,
+          port: parseInt(port, 10) || DEFAULT_SSH_PORT,
           username,
           authType,
           credential,
@@ -93,7 +94,7 @@ export const EditServerModal: React.FC<EditServerModalProps> = ({
       const updated = await updateServer(server.id, {
         name,
         host,
-        port: parseInt(port, 10) || 22,
+        port: parseInt(port, 10) || DEFAULT_SSH_PORT,
         username,
         authType,
         credential: credential.trim() ? credential : undefined,
@@ -208,9 +209,9 @@ export const EditServerModal: React.FC<EditServerModalProps> = ({
               <div className="grid grid-cols-2 gap-1 p-1 bg-[#1f1f1f] border border-zinc-800 rounded-lg">
                 <button
                   type="button"
-                  onClick={() => setAuthType('password')}
+                  onClick={() => setAuthType(AuthType.PASSWORD)}
                   className={`flex items-center justify-center gap-1 py-1 rounded text-[11px] font-medium transition-all ${
-                    authType === 'password'
+                    authType === AuthType.PASSWORD
                       ? 'bg-sky-600 text-white shadow'
                       : 'text-slate-400 hover:text-slate-200'
                   }`}
@@ -219,9 +220,9 @@ export const EditServerModal: React.FC<EditServerModalProps> = ({
                 </button>
                 <button
                   type="button"
-                  onClick={() => setAuthType('privateKey')}
+                  onClick={() => setAuthType(AuthType.PRIVATE_KEY)}
                   className={`flex items-center justify-center gap-1 py-1 rounded text-[11px] font-medium transition-all ${
-                    authType === 'privateKey'
+                    authType === AuthType.PRIVATE_KEY
                       ? 'bg-sky-600 text-white shadow'
                       : 'text-slate-400 hover:text-slate-200'
                   }`}
@@ -235,11 +236,11 @@ export const EditServerModal: React.FC<EditServerModalProps> = ({
           {/* Credential input */}
           <div>
             <label className="block text-slate-300 font-medium mb-1">
-              {authType === 'password'
+              {authType === AuthType.PASSWORD
                 ? 'SSH Password (leave blank to keep existing)'
                 : 'PEM Private Key Content (leave blank to keep existing)'}
             </label>
-            {authType === 'password' ? (
+            {authType === AuthType.PASSWORD ? (
               <input
                 type="password"
                 placeholder="•••••••••••• (Unchanged)"

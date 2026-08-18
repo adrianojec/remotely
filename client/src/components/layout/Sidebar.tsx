@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Server, ServerGroup } from '../../types';
+import { Server, ServerGroup, AuthType } from '../../types';
 import {
   Server as ServerIcon,
   Plus,
@@ -119,7 +119,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
           {/* Auth badge */}
           <div className="flex items-center gap-1 text-[10px] text-slate-500">
-            {server.auth_type === 'privateKey' ? (
+            {server.auth_type === AuthType.PRIVATE_KEY ? (
               <span title="SSH Key Auth">
                 <Key className="w-3 h-3 text-amber-400/80" />
               </span>

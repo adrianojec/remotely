@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { X, Server, Key, Lock, CheckCircle2, AlertTriangle, Loader2, Folder } from 'lucide-react';
 import { addServer, testConnection } from '../../services/api';
-import { Server as ServerType, ServerGroup } from '../../types';
+import { Server as ServerType, ServerGroup, AuthType } from '../../types';
+import { DEFAULT_SSH_PORT } from '../../constants';
 
 interface AddServerModalProps {
   isOpen: boolean;
@@ -20,9 +21,9 @@ export const AddServerModal: React.FC<AddServerModalProps> = ({
 }) => {
   const [name, setName] = useState('');
   const [host, setHost] = useState('');
-  const [port, setPort] = useState('22');
+  const [port, setPort] = useState(String(DEFAULT_SSH_PORT));
   const [username, setUsername] = useState('root');
-  const [authType, setAuthType] = useState<'password' | 'privateKey'>('password');
+  const [authType, setAuthType] = useState<AuthType>(AuthType.PASSWORD);
   const [credential, setCredential] = useState('');
   const [groupId, setGroupId] = useState<string | null>(defaultGroupId);
 
@@ -52,14 +53,14 @@ export const AddServerModal: React.FC<AddServerModalProps> = ({
     try {
       const res = await testConnection({
         host,
-        port: parseInt(port, 10) || 22,
+        port: parseInt(port, 10) || DEFAULT_SSH_PORT,
         username,
         authType,
         credential,
       });
       setTestResult(res);
     } catch (err: any) {
-      setTestResult({ success: false, message: err.message || 'Connection test failed.' });
+      setTestResult({ success: false, message: err.message || 'Failed to test connection' });
     } finally {
       setTesting(false);
     }
@@ -68,7 +69,7 @@ export const AddServerModal: React.FC<AddServerModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !host || !username || !credential) {
-      setError('Please complete all required fields.');
+      setError('Please fill in all required fields');
       return;
     }
 
@@ -76,16 +77,16 @@ export const AddServerModal: React.FC<AddServerModalProps> = ({
     setError(null);
 
     try {
-      const server = await addServer({
+      const newServer = await addServer({
         name,
         host,
-        port: parseInt(port, 10) || 22,
+        port: parseInt(port, 10) || DEFAULT_SSH_PORT,
         username,
         authType,
         credential,
         groupId: groupId || null,
       });
-      onServerAdded(server);
+      onServerAdded(newServer);
       onClose();
     } catch (err: any) {
       setError(err.message || 'Failed to save server.');
@@ -194,9 +195,9 @@ export const AddServerModal: React.FC<AddServerModalProps> = ({
               <div className="grid grid-cols-2 gap-1 p-1 bg-[#1f1f1f] border border-zinc-800 rounded-lg">
                 <button
                   type="button"
-                  onClick={() => setAuthType('password')}
+                  onClick={() => setAuthType(AuthType.PASSWORD)}
                   className={`flex items-center justify-center gap-1 py-1 rounded text-[11px] font-medium transition-all ${
-                    authType === 'password'
+                    authType === AuthType.PASSWORD
                       ? 'bg-sky-600 text-white shadow'
                       : 'text-slate-400 hover:text-slate-200'
                   }`}
@@ -205,9 +206,9 @@ export const AddServerModal: React.FC<AddServerModalProps> = ({
                 </button>
                 <button
                   type="button"
-                  onClick={() => setAuthType('privateKey')}
+                  onClick={() => setAuthType(AuthType.PRIVATE_KEY)}
                   className={`flex items-center justify-center gap-1 py-1 rounded text-[11px] font-medium transition-all ${
-                    authType === 'privateKey'
+                    authType === AuthType.PRIVATE_KEY
                       ? 'bg-sky-600 text-white shadow'
                       : 'text-slate-400 hover:text-slate-200'
                   }`}
@@ -221,9 +222,9 @@ export const AddServerModal: React.FC<AddServerModalProps> = ({
           {/* Credential input */}
           <div>
             <label className="block text-slate-300 font-medium mb-1">
-              {authType === 'password' ? 'SSH Password *' : 'PEM Private Key Content *'}
+              {authType === AuthType.PASSWORD ? 'SSH Password *' : 'PEM Private Key Content *'}
             </label>
-            {authType === 'password' ? (
+            {authType === AuthType.PASSWORD ? (
               <input
                 type="password"
                 placeholder="••••••••••••"

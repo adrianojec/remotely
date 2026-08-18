@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import Guacamole from 'guacamole-common-js';
-import { Server } from '../../types';
+import { Server, RdpProtocol } from '../../types';
+import { DEFAULT_RDP_PORT, DEFAULT_VNC_PORT, DEFAULT_DESKTOP_DPI } from '../../constants';
 import { DesktopSettingsModal } from './DesktopSettingsModal';
 import {
   Monitor,
@@ -42,14 +43,14 @@ export const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ server, on
   const [clipboardText, setClipboardText] = useState<string>('');
   const [clipboardSentStatus, setClipboardSentStatus] = useState<string | null>(null);
 
-  const currentProtocol = (server.rdp_protocol || 'rdp').toUpperCase();
-  const currentPort = server.rdp_port || (server.rdp_protocol === 'vnc' ? 5900 : 3389);
+  const currentProtocol = (server.rdp_protocol || RdpProtocol.RDP).toUpperCase();
+  const currentPort = server.rdp_port || (server.rdp_protocol === RdpProtocol.VNC ? DEFAULT_VNC_PORT : DEFAULT_RDP_PORT);
 
   // Helper to calculate WS URL
   const getWsUrl = useCallback((width: number, height: number) => {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const host = window.location.host;
-    return `${protocol}//${host}/ws/desktop?serverId=${server.id}&width=${width}&height=${height}&dpi=96`;
+    return `${protocol}//${host}/ws/desktop?serverId=${server.id}&width=${width}&height=${height}&dpi=${DEFAULT_DESKTOP_DPI}`;
   }, [server.id]);
 
   const disconnectSession = useCallback(() => {
