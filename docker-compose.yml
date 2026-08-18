@@ -5,6 +5,7 @@ services:
   guacd:
     image: guacamole/guacd:latest
     container_name: remotely-guacd
+    platform: linux/amd64
     restart: unless-stopped
 
   # Remotely Backend Node API & WebSocket Gateway
