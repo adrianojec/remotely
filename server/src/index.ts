@@ -7,6 +7,7 @@ import { serversRouter } from './routes/servers.js';
 import { groupsRouter } from './routes/groups.js';
 import { dockerRouter } from './routes/docker.js';
 import { sftpRouter } from './routes/sftp.js';
+import { metricsRouter } from './routes/metrics.js';
 import { handleTerminalWebSocket } from './routes/terminal.js';
 import { handleDesktopWebSocket } from './routes/desktop.js';
 
@@ -56,6 +57,7 @@ app.route('/api/groups', groupsRouter);
 app.route('/api/servers', serversRouter);
 app.route('/api/servers', dockerRouter);
 app.route('/api/servers', sftpRouter);
+app.route('/api/servers', metricsRouter);
 
 app.get('/api/health', (c) => {
   return c.json({ status: 'ok', timestamp: new Date().toISOString() });

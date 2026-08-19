@@ -50,4 +50,61 @@ export interface SftpItem {
   modifiedAt: string;
 }
 
+export interface CpuMetrics {
+  usagePercent: number;
+  cores: number;
+  model: string;
+  load1: number;
+  load5: number;
+  load15: number;
+}
+
+export interface MemoryMetrics {
+  totalBytes: number;
+  usedBytes: number;
+  freeBytes: number;
+  availableBytes: number;
+  cachedBytes: number;
+  usedPercent: number;
+  swapTotalBytes: number;
+  swapUsedBytes: number;
+  swapUsedPercent: number;
+}
+
+export interface DiskPartition {
+  filesystem: string;
+  totalBytes: number;
+  usedBytes: number;
+  availableBytes: number;
+  usedPercent: number;
+  mountPoint: string;
+}
+
+export interface NetworkMetrics {
+  rxBytes: number;
+  txBytes: number;
+  interfacesCount: number;
+}
+
+export interface ProcessInfo {
+  pid: string;
+  user: string;
+  cpuPercent: number;
+  memPercent: number;
+  command: string;
+}
+
+export interface ServerMetrics {
+  osName: string;
+  kernelVersion: string;
+  uptime: string;
+  cpu: CpuMetrics;
+  memory: MemoryMetrics;
+  disks: DiskPartition[];
+  network: NetworkMetrics;
+  topProcesses: ProcessInfo[];
+  timestamp: string;
+}
+
+
 

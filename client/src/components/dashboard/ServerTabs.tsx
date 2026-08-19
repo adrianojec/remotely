@@ -1,6 +1,6 @@
 import React from 'react';
 import { TabType } from '../../types';
-import { Terminal, Box, FolderTree, Monitor } from 'lucide-react';
+import { Activity, Terminal, Box, FolderTree, Monitor } from 'lucide-react';
 
 interface ServerTabsProps {
   activeTab: TabType;
@@ -9,6 +9,7 @@ interface ServerTabsProps {
 
 export const ServerTabs: React.FC<ServerTabsProps> = ({ activeTab, onTabChange }) => {
   const tabs: { id: TabType; label: string; icon: React.ReactNode }[] = [
+    { id: TabType.METRICS, label: 'System Metrics', icon: <Activity className="w-4 h-4" /> },
     { id: TabType.TERMINAL, label: 'Interactive Terminal', icon: <Terminal className="w-4 h-4" /> },
     { id: TabType.CONTAINERS, label: 'Docker Containers', icon: <Box className="w-4 h-4" /> },
     { id: TabType.SFTP, label: 'SFTP Explorer', icon: <FolderTree className="w-4 h-4" /> },

@@ -316,5 +316,19 @@ export async function updateDesktopConfig(
   return data.server;
 }
 
+/* ==================== Server Metrics API Methods ==================== */
+
+export async function fetchServerMetrics(serverId: string): Promise<import('../types').ServerMetrics> {
+  const res = await fetch(`${API_BASE}/servers/${serverId}/metrics`);
+  const data = await res.json();
+
+  if (!res.ok || !data.success) {
+    throw new Error(data.message || 'Failed to fetch server metrics');
+  }
+
+  return data.metrics;
+}
+
+
 
 

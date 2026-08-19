@@ -13,13 +13,14 @@ import { TerminalView } from './components/terminal/TerminalView';
 import { ContainersTable } from './components/docker/ContainersTable';
 import { SftpExplorer } from './components/sftp/SftpExplorer';
 import { RemoteDesktopView } from './components/desktop/RemoteDesktopView';
+import { MetricsDashboardView } from './components/metrics/MetricsDashboardView';
 import { Server as ServerIcon, Plus } from 'lucide-react';
 
 export function App() {
   const [servers, setServers] = useState<Server[]>([]);
   const [groups, setGroups] = useState<ServerGroup[]>([]);
   const [activeServer, setActiveServer] = useState<Server | null>(null);
-  const [activeTab, setActiveTab] = useState<TabType>(TabType.TERMINAL);
+  const [activeTab, setActiveTab] = useState<TabType>(TabType.METRICS);
   const [loading, setLoading] = useState(true);
 
   // Modals state
@@ -147,6 +148,9 @@ export function App() {
 
               {/* View Content */}
               <div className="flex-1 p-6 overflow-hidden">
+                {activeTab === TabType.METRICS && (
+                  <MetricsDashboardView key={activeServer.id} server={activeServer} />
+                )}
                 {activeTab === TabType.TERMINAL && (
                   <TerminalView key={activeServer.id} server={activeServer} />
                 )}

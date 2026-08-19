@@ -22,6 +22,7 @@ export enum DockerAction {
 }
 
 export enum TabType {
+  METRICS = 'metrics',
   TERMINAL = 'terminal',
   CONTAINERS = 'containers',
   SFTP = 'sftp',
