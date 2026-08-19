@@ -111,7 +111,7 @@ export function App() {
   };
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#181818] text-slate-100 font-sans">
+    <div className="flex flex-col h-screen w-screen overflow-hidden bg-slate-100 dark:bg-[#181818] text-slate-800 dark:text-slate-100 font-sans transition-colors duration-200">
       {/* Top Header */}
       <Header
         activeServer={activeServer}
@@ -136,7 +136,7 @@ export function App() {
         />
 
         {/* Content Area */}
-        <main className="flex-1 flex flex-col overflow-hidden bg-[#1e1e1e] relative">
+        <main className="flex-1 flex flex-col overflow-hidden bg-slate-50 dark:bg-[#1e1e1e] relative transition-colors duration-200">
           {activeServer ? (
             <>
               {/* Tab Navigation */}
@@ -168,11 +168,11 @@ export function App() {
           ) : (
             /* Empty State */
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-              <div className="w-16 h-16 rounded-2xl bg-sky-500/10 border border-sky-500/20 text-sky-400 flex items-center justify-center mb-4 shadow-xl shadow-sky-500/10">
+              <div className="w-16 h-16 rounded-2xl bg-sky-500/10 border border-sky-500/20 text-sky-500 dark:text-sky-400 flex items-center justify-center mb-4 shadow-xl shadow-sky-500/10">
                 <ServerIcon className="w-8 h-8" />
               </div>
-              <h2 className="text-xl font-bold text-slate-100 mb-2">No Remote Server Selected</h2>
-              <p className="text-xs text-slate-400 max-w-md mb-6 leading-relaxed">
+              <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">No Remote Server Selected</h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mb-6 leading-relaxed">
                 Connect your Linux infrastructure securely over SSH. Manage Docker containers and open interactive terminal sessions directly from your browser.
               </p>
               <button

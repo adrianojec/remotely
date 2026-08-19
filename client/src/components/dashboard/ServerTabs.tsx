@@ -16,7 +16,7 @@ export const ServerTabs: React.FC<ServerTabsProps> = ({ activeTab, onTabChange }
   ];
 
   return (
-    <div className="flex items-center justify-between border-b border-[#2b2b2b] px-6 bg-[#181818]">
+    <div className="flex items-center justify-between border-b border-slate-200 dark:border-[#2b2b2b] px-6 bg-white dark:bg-[#181818] transition-colors duration-200">
       <div className="flex items-center gap-1">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
@@ -26,8 +26,8 @@ export const ServerTabs: React.FC<ServerTabsProps> = ({ activeTab, onTabChange }
               onClick={() => onTabChange(tab.id)}
               className={`flex items-center gap-2 px-4 py-3 text-xs font-medium transition-all relative border-b-2 ${
                 isActive
-                  ? 'border-sky-500 text-sky-400 font-semibold bg-[#1e1e1e]'
-                  : 'border-transparent text-slate-400 hover:text-slate-200 hover:border-slate-700'
+                  ? 'border-sky-600 dark:border-sky-500 text-sky-600 dark:text-sky-400 font-semibold bg-slate-50 dark:bg-[#1e1e1e]'
+                  : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-700'
               }`}
             >
               {tab.icon}
@@ -39,3 +39,4 @@ export const ServerTabs: React.FC<ServerTabsProps> = ({ activeTab, onTabChange }
     </div>
   );
 };
+

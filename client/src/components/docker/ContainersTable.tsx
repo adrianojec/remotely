@@ -82,18 +82,18 @@ export const ContainersTable: React.FC<ContainersTableProps> = ({ server }) => {
   }
 
   return (
-    <div className="flex flex-col h-full bg-[#181818] border border-[#2b2b2b] rounded-xl overflow-hidden shadow-xl">
+    <div className="flex flex-col h-full bg-white dark:bg-[#181818] border border-slate-200 dark:border-[#2b2b2b] rounded-xl overflow-hidden shadow-xl transition-colors duration-200">
       {/* Table Subheader */}
-      <div className="p-4 border-b border-[#2b2b2b] flex items-center justify-between">
+      <div className="p-4 border-b border-slate-200 dark:border-[#2b2b2b] flex items-center justify-between bg-white dark:bg-[#181818]">
         <div className="flex items-center gap-2">
-          <Box className="w-4 h-4 text-sky-400" />
-          <span className="font-semibold text-xs text-slate-200">
+          <Box className="w-4 h-4 text-sky-600 dark:text-sky-400" />
+          <span className="font-semibold text-xs text-slate-800 dark:text-slate-200">
             Containers ({containers.length})
           </span>
         </div>
         <button
           onClick={loadContainers}
-          className="flex items-center gap-1 bg-zinc-800 hover:bg-zinc-700 text-slate-300 text-xs px-2.5 py-1.5 rounded-lg border border-zinc-700 transition-colors"
+          className="flex items-center gap-1 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-slate-300 text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-zinc-700 transition-colors"
         >
           <RefreshCw className="w-3.5 h-3.5" /> Refresh
         </button>
@@ -103,7 +103,7 @@ export const ContainersTable: React.FC<ContainersTableProps> = ({ server }) => {
       <div className="flex-1 overflow-x-auto">
         <table className="w-full text-left text-xs border-collapse">
           <thead>
-            <tr className="bg-[#1f1f1f] border-b border-[#2b2b2b] text-slate-400 font-mono text-[11px] uppercase tracking-wider">
+            <tr className="bg-slate-50 dark:bg-[#1f1f1f] border-b border-slate-200 dark:border-[#2b2b2b] text-slate-500 dark:text-slate-400 font-mono text-[11px] uppercase tracking-wider">
               <th className="py-3 px-4">State</th>
               <th className="py-3 px-4">Name / ID</th>
               <th className="py-3 px-4">Image</th>
@@ -112,10 +112,10 @@ export const ContainersTable: React.FC<ContainersTableProps> = ({ server }) => {
               <th className="py-3 px-4 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800/60 font-mono">
+          <tbody className="divide-y divide-slate-200 dark:divide-slate-800/60 font-mono">
             {containers.length === 0 ? (
               <tr>
-                <td colSpan={6} className="text-center py-12 text-slate-500 font-sans text-xs">
+                <td colSpan={6} className="text-center py-12 text-slate-400 dark:text-slate-500 font-sans text-xs">
                   No Docker containers found on this server.
                 </td>
               </tr>
@@ -125,19 +125,19 @@ export const ContainersTable: React.FC<ContainersTableProps> = ({ server }) => {
                 const isActioning = actionId === c.ID;
 
                 return (
-                  <tr key={c.ID} className="hover:bg-slate-800/40 transition-colors">
+                  <tr key={c.ID} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                     {/* State badge */}
                     <td className="py-3 px-4">
                       <span
                         className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold ${
                           isRunning
-                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                            : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                            : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20'
                         }`}
                       >
                         <span
                           className={`w-1.5 h-1.5 rounded-full ${
-                            isRunning ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400'
+                            isRunning ? 'bg-emerald-500 dark:bg-emerald-400 animate-pulse' : 'bg-rose-500 dark:bg-rose-400'
                           }`}
                         />
                         {c.State}
@@ -146,22 +146,22 @@ export const ContainersTable: React.FC<ContainersTableProps> = ({ server }) => {
 
                     {/* Name / ID */}
                     <td className="py-3 px-4">
-                      <div className="font-semibold text-slate-100 font-sans">{c.Names}</div>
-                      <div className="text-[10px] text-slate-500">{c.ID.substring(0, 12)}</div>
+                      <div className="font-semibold text-slate-900 dark:text-slate-100 font-sans">{c.Names}</div>
+                      <div className="text-[10px] text-slate-400 dark:text-slate-500">{c.ID.substring(0, 12)}</div>
                     </td>
 
                     {/* Image */}
-                    <td className="py-3 px-4 text-slate-300 text-[11px] truncate max-w-[200px]" title={c.Image}>
+                    <td className="py-3 px-4 text-slate-700 dark:text-slate-300 text-[11px] truncate max-w-[200px]" title={c.Image}>
                       {c.Image}
                     </td>
 
                     {/* Ports */}
-                    <td className="py-3 px-4 text-slate-400 text-[11px] truncate max-w-[180px]" title={c.Ports}>
+                    <td className="py-3 px-4 text-slate-500 dark:text-slate-400 text-[11px] truncate max-w-[180px]" title={c.Ports}>
                       {c.Ports || '—'}
                     </td>
 
                     {/* Status */}
-                    <td className="py-3 px-4 text-slate-400 text-[11px]">{c.Status}</td>
+                    <td className="py-3 px-4 text-slate-500 dark:text-slate-400 text-[11px]">{c.Status}</td>
 
                     {/* Actions */}
                     <td className="py-3 px-4 text-right">
@@ -170,7 +170,7 @@ export const ContainersTable: React.FC<ContainersTableProps> = ({ server }) => {
                           <button
                             onClick={() => handleAction(c.ID, DockerAction.STOP)}
                             disabled={isActioning}
-                            className="p-1 rounded bg-slate-800 hover:bg-rose-900/40 text-slate-400 hover:text-rose-300 border border-slate-700/50 transition-colors"
+                            className="p-1 rounded bg-slate-100 dark:bg-slate-800 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-300 border border-slate-200 dark:border-slate-700/50 transition-colors"
                             title="Stop Container"
                           >
                             <Square className="w-3.5 h-3.5 fill-current" />
@@ -179,7 +179,7 @@ export const ContainersTable: React.FC<ContainersTableProps> = ({ server }) => {
                           <button
                             onClick={() => handleAction(c.ID, DockerAction.START)}
                             disabled={isActioning}
-                            className="p-1 rounded bg-slate-800 hover:bg-emerald-900/40 text-slate-400 hover:text-emerald-300 border border-slate-700/50 transition-colors"
+                            className="p-1 rounded bg-slate-100 dark:bg-slate-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-slate-600 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-300 border border-slate-200 dark:border-slate-700/50 transition-colors"
                             title="Start Container"
                           >
                             <Play className="w-3.5 h-3.5 fill-current" />
@@ -189,7 +189,7 @@ export const ContainersTable: React.FC<ContainersTableProps> = ({ server }) => {
                         <button
                           onClick={() => handleAction(c.ID, DockerAction.RESTART)}
                           disabled={isActioning}
-                          className="p-1 rounded bg-zinc-800 hover:bg-sky-900/40 text-slate-400 hover:text-sky-300 border border-zinc-700/50 transition-colors"
+                          className="p-1 rounded bg-slate-100 dark:bg-zinc-800 hover:bg-sky-100 dark:hover:bg-sky-900/40 text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-300 border border-slate-200 dark:border-zinc-700/50 transition-colors"
                           title="Restart Container"
                         >
                           <RotateCw className={`w-3.5 h-3.5 ${isActioning ? 'animate-spin' : ''}`} />
@@ -197,7 +197,7 @@ export const ContainersTable: React.FC<ContainersTableProps> = ({ server }) => {
 
                         <button
                           onClick={() => setSelectedContainerLogs({ id: c.ID, name: c.Names })}
-                          className="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 border border-slate-700/50 transition-colors"
+                          className="p-1 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 border border-slate-200 dark:border-slate-700/50 transition-colors"
                           title="View Logs"
                         >
                           <FileText className="w-3.5 h-3.5" />

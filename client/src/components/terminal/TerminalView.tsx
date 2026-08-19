@@ -3,13 +3,61 @@ import { Terminal as XTerm } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import { WebLinksAddon } from '@xterm/addon-web-links';
 import { Server } from '../../types';
-import { Terminal, RefreshCw, Trash2, Maximize2, ShieldAlert } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext';
+import { Terminal, RefreshCw, Trash2, Maximize2 } from 'lucide-react';
 
 interface TerminalViewProps {
   server: Server;
 }
 
+const darkTheme = {
+  background: '#1e1e1e',
+  foreground: '#cccccc',
+  cursor: '#007acc',
+  selectionBackground: 'rgba(0, 122, 204, 0.4)',
+  black: '#1e1e1e',
+  red: '#f44747',
+  green: '#6a9955',
+  yellow: '#d7ba7d',
+  blue: '#569cd6',
+  magenta: '#c586c0',
+  cyan: '#4ec9b0',
+  white: '#d4d4d4',
+  brightBlack: '#808080',
+  brightRed: '#f44747',
+  brightGreen: '#b5cea8',
+  brightYellow: '#ce9178',
+  brightBlue: '#9cdcfe',
+  brightMagenta: '#d8a0df',
+  brightCyan: '#4ec9b0',
+  brightWhite: '#ffffff',
+};
+
+const lightTheme = {
+  background: '#ffffff',
+  foreground: '#333333',
+  cursor: '#005fb8',
+  selectionBackground: 'rgba(0, 95, 184, 0.25)',
+  black: '#000000',
+  red: '#cd3131',
+  green: '#008000',
+  yellow: '#795e26',
+  blue: '#0451a5',
+  magenta: '#bc05bc',
+  cyan: '#0598bc',
+  white: '#555555',
+  brightBlack: '#666666',
+  brightRed: '#cd3131',
+  brightGreen: '#14ce14',
+  brightYellow: '#b58b00',
+  brightBlue: '#0451a5',
+  brightMagenta: '#bc05bc',
+  brightCyan: '#0598bc',
+  brightWhite: '#a5a5a5',
+};
+
 export const TerminalView: React.FC<TerminalViewProps> = ({ server }) => {
+  const { resolvedTheme } = useTheme();
   const terminalRef = useRef<HTMLDivElement>(null);
   const xtermRef = useRef<XTerm | null>(null);
   const fitAddonRef = useRef<FitAddon | null>(null);
@@ -21,7 +69,6 @@ export const TerminalView: React.FC<TerminalViewProps> = ({ server }) => {
   const connectWebSocket = () => {
     if (!server) return;
 
-    // Dispose existing connection if any
     if (wsRef.current) {
       wsRef.current.close();
     }
@@ -48,7 +95,6 @@ export const TerminalView: React.FC<TerminalViewProps> = ({ server }) => {
       setConnected(true);
       if (xtermRef.current && fitAddonRef.current) {
         fitAddonRef.current.fit();
-        // Send initial size
         const cols = xtermRef.current.cols;
         const rows = xtermRef.current.rows;
         ws.send(JSON.stringify({ type: 'resize', cols, rows }));
@@ -91,31 +137,9 @@ export const TerminalView: React.FC<TerminalViewProps> = ({ server }) => {
   useEffect(() => {
     if (!terminalRef.current) return;
 
-    // Initialize Xterm
     const term = new XTerm({
       cursorBlink: true,
-      theme: {
-        background: '#1e1e1e',
-        foreground: '#cccccc',
-        cursor: '#007acc',
-        selectionBackground: 'rgba(0, 122, 204, 0.4)',
-        black: '#1e1e1e',
-        red: '#f44747',
-        green: '#6a9955',
-        yellow: '#d7ba7d',
-        blue: '#569cd6',
-        magenta: '#c586c0',
-        cyan: '#4ec9b0',
-        white: '#d4d4d4',
-        brightBlack: '#808080',
-        brightRed: '#f44747',
-        brightGreen: '#b5cea8',
-        brightYellow: '#ce9178',
-        brightBlue: '#9cdcfe',
-        brightMagenta: '#d8a0df',
-        brightCyan: '#4ec9b0',
-        brightWhite: '#ffffff',
-      },
+      theme: resolvedTheme === 'dark' ? darkTheme : lightTheme,
       fontFamily: 'JetBrains Mono, Menlo, Monaco, Consolas, monospace',
       fontSize: 13,
       letterSpacing: 0,
@@ -134,14 +158,12 @@ export const TerminalView: React.FC<TerminalViewProps> = ({ server }) => {
     xtermRef.current = term;
     fitAddonRef.current = fitAddon;
 
-    // Handle user keystrokes in xterm
     term.onData((data) => {
       if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
         wsRef.current.send(JSON.stringify({ type: 'input', data }));
       }
     });
 
-    // Handle window resize
     const handleResize = () => {
       if (fitAddonRef.current && xtermRef.current) {
         fitAddonRef.current.fit();
@@ -159,7 +181,6 @@ export const TerminalView: React.FC<TerminalViewProps> = ({ server }) => {
 
     window.addEventListener('resize', handleResize);
 
-    // Connect WS
     connectWebSocket();
 
     return () => {
@@ -168,6 +189,12 @@ export const TerminalView: React.FC<TerminalViewProps> = ({ server }) => {
       term.dispose();
     };
   }, [server.id]);
+
+  useEffect(() => {
+    if (xtermRef.current) {
+      xtermRef.current.options.theme = resolvedTheme === 'dark' ? darkTheme : lightTheme;
+    }
+  }, [resolvedTheme]);
 
   const handleClear = () => {
     if (xtermRef.current) {
@@ -182,29 +209,29 @@ export const TerminalView: React.FC<TerminalViewProps> = ({ server }) => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#1e1e1e] rounded-xl border border-[#2b2b2b] shadow-2xl overflow-hidden">
+    <div className="flex flex-col h-full bg-white dark:bg-[#1e1e1e] rounded-xl border border-slate-200 dark:border-[#2b2b2b] shadow-2xl overflow-hidden transition-colors duration-200">
       {/* Terminal Toolbar */}
-      <div className="h-10 bg-[#181818] border-b border-[#2b2b2b] px-4 flex items-center justify-between select-none">
-        <div className="flex items-center gap-2 text-xs font-mono text-slate-300">
-          <Terminal className="w-4 h-4 text-sky-400" />
+      <div className="h-10 bg-slate-100 dark:bg-[#181818] border-b border-slate-200 dark:border-[#2b2b2b] px-4 flex items-center justify-between select-none">
+        <div className="flex items-center gap-2 text-xs font-mono text-slate-700 dark:text-slate-300">
+          <Terminal className="w-4 h-4 text-sky-600 dark:text-sky-400" />
           <span className="font-semibold">{server.username}@{server.host}</span>
-          <span className="text-slate-600">|</span>
-          <span className="text-slate-400 text-[11px] truncate max-w-xs">{statusText}</span>
+          <span className="text-slate-400 dark:text-slate-600">|</span>
+          <span className="text-slate-500 dark:text-slate-400 text-[11px] truncate max-w-xs">{statusText}</span>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             onClick={connectWebSocket}
-            className="flex items-center gap-1 text-[11px] text-slate-400 hover:text-slate-200 bg-zinc-800/60 hover:bg-zinc-800 px-2 py-1 rounded border border-zinc-700/50 transition-colors"
+            className="flex items-center gap-1 text-[11px] text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 bg-slate-200/80 hover:bg-slate-300/80 dark:bg-zinc-800/60 dark:hover:bg-zinc-800 px-2 py-1 rounded border border-slate-300/60 dark:border-zinc-700/50 transition-colors"
             title="Reconnect Session"
           >
-            <RefreshCw className={`w-3 h-3 ${connected ? '' : 'text-amber-400'}`} />
+            <RefreshCw className={`w-3 h-3 ${connected ? '' : 'text-amber-500 dark:text-amber-400'}`} />
             {connected ? 'Reconnect' : 'Connect'}
           </button>
 
           <button
             onClick={handleClear}
-            className="text-[11px] text-slate-400 hover:text-slate-200 bg-zinc-800/60 hover:bg-zinc-800 px-2 py-1 rounded border border-zinc-700/50 transition-colors flex items-center gap-1"
+            className="text-[11px] text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 bg-slate-200/80 hover:bg-slate-300/80 dark:bg-zinc-800/60 dark:hover:bg-zinc-800 px-2 py-1 rounded border border-slate-300/60 dark:border-zinc-700/50 transition-colors flex items-center gap-1"
             title="Clear Screen"
           >
             <Trash2 className="w-3 h-3" />
@@ -213,7 +240,7 @@ export const TerminalView: React.FC<TerminalViewProps> = ({ server }) => {
 
           <button
             onClick={handleFit}
-            className="text-[11px] text-slate-400 hover:text-slate-200 bg-zinc-800/60 hover:bg-zinc-800 px-2 py-1 rounded border border-zinc-700/50 transition-colors flex items-center gap-1"
+            className="text-[11px] text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 bg-slate-200/80 hover:bg-slate-300/80 dark:bg-zinc-800/60 dark:hover:bg-zinc-800 px-2 py-1 rounded border border-slate-300/60 dark:border-zinc-700/50 transition-colors flex items-center gap-1"
             title="Fit Canvas"
           >
             <Maximize2 className="w-3 h-3" />
@@ -222,9 +249,10 @@ export const TerminalView: React.FC<TerminalViewProps> = ({ server }) => {
       </div>
 
       {/* Terminal Container */}
-      <div className="flex-1 p-2 relative overflow-hidden bg-[#1e1e1e]">
+      <div className="flex-1 p-2 relative overflow-hidden bg-white dark:bg-[#1e1e1e]">
         <div ref={terminalRef} className="w-full h-full" />
       </div>
     </div>
   );
 };
+

@@ -48,13 +48,13 @@ export const ContainerLogsModal: React.FC<ContainerLogsModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-      <div className="bg-[#181818] border border-[#2b2b2b] rounded-2xl w-full max-w-4xl h-[80vh] shadow-2xl flex flex-col overflow-hidden">
+      <div className="bg-white dark:bg-[#181818] border border-slate-200 dark:border-[#2b2b2b] rounded-2xl w-full max-w-4xl h-[80vh] shadow-2xl flex flex-col overflow-hidden transition-colors duration-200">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-[#2b2b2b] flex items-center justify-between">
+        <div className="px-6 py-4 border-b border-slate-200 dark:border-[#2b2b2b] flex items-center justify-between bg-white dark:bg-[#181818]">
           <div className="flex items-center gap-2">
-            <FileText className="w-5 h-5 text-sky-400" />
-            <h3 className="font-semibold text-slate-100 text-sm">
-              Logs: <span className="font-mono text-sky-300">{containerName}</span> ({containerId.substring(0, 12)})
+            <FileText className="w-5 h-5 text-sky-600 dark:text-sky-400" />
+            <h3 className="font-semibold text-slate-900 dark:text-slate-100 text-sm">
+              Logs: <span className="font-mono text-sky-600 dark:text-sky-300">{containerName}</span> ({containerId.substring(0, 12)})
             </h3>
           </div>
 
@@ -62,14 +62,14 @@ export const ContainerLogsModal: React.FC<ContainerLogsModalProps> = ({
             <button
               onClick={loadLogs}
               disabled={loading}
-              className="p-1.5 rounded-lg bg-zinc-800 text-slate-300 hover:text-white hover:bg-zinc-700 transition-colors disabled:opacity-50 text-xs flex items-center gap-1"
+              className="p-1.5 rounded-lg bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-zinc-700 transition-colors disabled:opacity-50 text-xs flex items-center gap-1 border border-slate-200 dark:border-zinc-700"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
               Refresh
             </button>
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-slate-200 transition-colors p-1 rounded-lg hover:bg-zinc-800"
+              className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800"
             >
               <X className="w-5 h-5" />
             </button>
@@ -77,9 +77,9 @@ export const ContainerLogsModal: React.FC<ContainerLogsModalProps> = ({
         </div>
 
         {/* Content */}
-        <div className="flex-1 bg-[#1e1e1e] p-4 font-mono text-xs overflow-y-auto text-slate-300 whitespace-pre-wrap select-text">
+        <div className="flex-1 bg-slate-900 dark:bg-[#1e1e1e] p-4 font-mono text-xs overflow-y-auto text-slate-100 dark:text-slate-300 whitespace-pre-wrap select-text">
           {loading ? (
-            <div className="flex items-center justify-center h-full text-slate-500 gap-2">
+            <div className="flex items-center justify-center h-full text-slate-400 dark:text-slate-500 gap-2">
               <Loader2 className="w-5 h-5 animate-spin text-sky-400" />
               <span>Fetching latest 100 log lines over SSH...</span>
             </div>

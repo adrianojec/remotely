@@ -184,9 +184,9 @@ export const SftpExplorer: React.FC<SftpExplorerProps> = ({ server }) => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#1e1e1e] rounded-2xl border border-[#2b2b2b] overflow-hidden shadow-xl">
+    <div className="flex flex-col h-full bg-white dark:bg-[#1e1e1e] rounded-2xl border border-slate-200 dark:border-[#2b2b2b] overflow-hidden shadow-xl transition-colors duration-200">
       {/* Top Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-[#181818] border-b border-[#2b2b2b]">
+      <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-slate-100 dark:bg-[#181818] border-b border-slate-200 dark:border-[#2b2b2b]">
         {/* Navigation Breadcrumb */}
         <div className="flex-1 min-w-[300px]">
           <SftpBreadcrumb currentPath={currentPath} onNavigate={handleNavigate} />
@@ -196,20 +196,20 @@ export const SftpExplorer: React.FC<SftpExplorerProps> = ({ server }) => {
         <div className="flex items-center gap-2">
           {/* Search Box */}
           <div className="relative">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Filter items..."
-              className="bg-[#212121] border border-[#333] rounded-xl pl-9 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-sky-500 font-sans w-36 sm:w-44"
+              className="bg-white dark:bg-[#212121] border border-slate-200 dark:border-[#333] rounded-xl pl-9 pr-3 py-1.5 text-xs text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-sky-500 font-sans w-36 sm:w-44"
             />
           </div>
 
           <button
             onClick={handleGoUp}
             disabled={!currentPath || currentPath === '/'}
-            className="p-2 rounded-xl bg-[#212121] hover:bg-[#2b2b2b] disabled:opacity-40 border border-[#333] text-slate-300 transition-colors"
+            className="p-2 rounded-xl bg-white dark:bg-[#212121] hover:bg-slate-200 dark:hover:bg-[#2b2b2b] disabled:opacity-40 border border-slate-200 dark:border-[#333] text-slate-700 dark:text-slate-300 transition-colors"
             title="Go to parent directory"
           >
             <CornerLeftUp className="w-4 h-4" />
@@ -218,17 +218,17 @@ export const SftpExplorer: React.FC<SftpExplorerProps> = ({ server }) => {
           <button
             onClick={() => loadDirectory(currentPath)}
             disabled={loading}
-            className="p-2 rounded-xl bg-[#212121] hover:bg-[#2b2b2b] disabled:opacity-40 border border-[#333] text-slate-300 transition-colors"
+            className="p-2 rounded-xl bg-white dark:bg-[#212121] hover:bg-slate-200 dark:hover:bg-[#2b2b2b] disabled:opacity-40 border border-slate-200 dark:border-[#333] text-slate-700 dark:text-slate-300 transition-colors"
             title="Refresh Directory"
           >
-            <RotateCw className={`w-4 h-4 ${loading ? 'animate-spin text-sky-400' : ''}`} />
+            <RotateCw className={`w-4 h-4 ${loading ? 'animate-spin text-sky-600 dark:text-sky-400' : ''}`} />
           </button>
 
           <button
             onClick={() => setIsNewItemModalOpen(true)}
-            className="flex items-center gap-1.5 bg-[#212121] hover:bg-[#2b2b2b] text-slate-200 border border-[#333] text-xs px-3 py-1.5 rounded-xl font-medium transition-colors"
+            className="flex items-center gap-1.5 bg-white dark:bg-[#212121] hover:bg-slate-200 dark:hover:bg-[#2b2b2b] text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-[#333] text-xs px-3 py-1.5 rounded-xl font-medium transition-colors"
           >
-            <Plus className="w-4 h-4 text-sky-400" />
+            <Plus className="w-4 h-4 text-sky-600 dark:text-sky-400" />
             <span>New</span>
           </button>
 
@@ -272,7 +272,7 @@ export const SftpExplorer: React.FC<SftpExplorerProps> = ({ server }) => {
 
         {/* Error Alert */}
         {error && (
-          <div className="m-4 bg-red-500/10 border border-red-500/20 px-4 py-3 rounded-xl flex items-center gap-3 text-xs text-red-400">
+          <div className="m-4 bg-red-500/10 border border-red-500/20 px-4 py-3 rounded-xl flex items-center gap-3 text-xs text-red-500 dark:text-red-400">
             <AlertCircle className="w-4 h-4 flex-shrink-0" />
             <span>{error}</span>
           </div>
@@ -281,32 +281,32 @@ export const SftpExplorer: React.FC<SftpExplorerProps> = ({ server }) => {
         {/* Loading Spinner */}
         {loading ? (
           <div className="h-full flex flex-col items-center justify-center p-8 text-slate-400 gap-3">
-            <Loader2 className="w-7 h-7 animate-spin text-sky-400" />
+            <Loader2 className="w-7 h-7 animate-spin text-sky-600 dark:text-sky-400" />
             <p className="text-xs font-medium">Fetching remote directory contents...</p>
           </div>
         ) : filteredItems.length === 0 ? (
           /* Empty State */
           <div className="h-full flex flex-col items-center justify-center p-8 text-center text-slate-400">
-            <HardDrive className="w-10 h-10 mb-3 text-slate-600" />
-            <p className="text-sm font-semibold text-slate-300">Directory is empty</p>
-            <p className="text-xs text-slate-500 mt-1">Upload files or create items using the toolbar above.</p>
+            <HardDrive className="w-10 h-10 mb-3 text-slate-400 dark:text-slate-600" />
+            <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">Directory is empty</p>
+            <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Upload files or create items using the toolbar above.</p>
           </div>
         ) : (
           /* File List Table */
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="border-b border-[#2b2b2b] bg-[#1a1a1a] text-slate-400 font-medium sticky top-0 z-10">
+              <tr className="border-b border-slate-200 dark:border-[#2b2b2b] bg-slate-50 dark:bg-[#1a1a1a] text-slate-500 dark:text-slate-400 font-medium sticky top-0 z-10">
                 <th className="py-3 px-4">Name</th>
                 <th className="py-3 px-4 hidden sm:table-cell">Size</th>
                 <th className="py-3 px-4 hidden md:table-cell">Modified</th>
                 <th className="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#262626] font-mono text-slate-300">
+            <tbody className="divide-y divide-slate-200 dark:divide-[#262626] font-mono text-slate-700 dark:text-slate-300">
               {filteredItems.map((item) => (
                 <tr
                   key={item.path}
-                  className="hover:bg-[#252525] transition-colors group"
+                  className="hover:bg-slate-50 dark:hover:bg-[#252525] transition-colors group"
                 >
                   {/* Name Column */}
                   <td className="py-2.5 px-4 font-sans">
@@ -316,16 +316,16 @@ export const SftpExplorer: React.FC<SftpExplorerProps> = ({ server }) => {
                           type="text"
                           value={renameValue}
                           onChange={(e) => setRenameValue(e.target.value)}
-                          className="bg-[#141414] border border-sky-500 rounded px-2 py-0.5 text-xs text-slate-100 font-mono focus:outline-none"
+                          className="bg-slate-100 dark:bg-[#141414] border border-sky-500 rounded px-2 py-0.5 text-xs text-slate-900 dark:text-slate-100 font-mono focus:outline-none"
                           autoFocus
                         />
-                        <button type="submit" className="text-xs text-sky-400 hover:underline">
+                        <button type="submit" className="text-xs text-sky-600 dark:text-sky-400 hover:underline">
                           Save
                         </button>
                         <button
                           type="button"
                           onClick={() => setRenamingItem(null)}
-                          className="text-xs text-slate-400 hover:underline"
+                          className="text-xs text-slate-500 dark:text-slate-400 hover:underline"
                         >
                           Cancel
                         </button>
@@ -336,24 +336,24 @@ export const SftpExplorer: React.FC<SftpExplorerProps> = ({ server }) => {
                         {item.isDirectory ? (
                           <button
                             onClick={() => handleNavigate(item.path)}
-                            className="font-medium text-slate-100 hover:text-sky-400 transition-colors truncate font-mono text-xs"
+                            className="font-medium text-slate-900 dark:text-slate-100 hover:text-sky-600 dark:hover:text-sky-400 transition-colors truncate font-mono text-xs"
                           >
                             {item.name}
                           </button>
                         ) : (
-                          <span className="truncate font-mono text-xs text-slate-200">{item.name}</span>
+                          <span className="truncate font-mono text-xs text-slate-800 dark:text-slate-200">{item.name}</span>
                         )}
                       </div>
                     )}
                   </td>
 
                   {/* Size Column */}
-                  <td className="py-2.5 px-4 text-slate-400 hidden sm:table-cell">
+                  <td className="py-2.5 px-4 text-slate-500 dark:text-slate-400 hidden sm:table-cell">
                     {item.isDirectory ? '—' : formatBytes(item.size)}
                   </td>
 
                   {/* Modified Date Column */}
-                  <td className="py-2.5 px-4 text-slate-400 hidden md:table-cell">
+                  <td className="py-2.5 px-4 text-slate-500 dark:text-slate-400 hidden md:table-cell">
                     {new Date(item.modifiedAt).toLocaleString()}
                   </td>
 
@@ -365,7 +365,7 @@ export const SftpExplorer: React.FC<SftpExplorerProps> = ({ server }) => {
                           {/* View / Edit Button */}
                           <button
                             onClick={() => setEditorFilePath(item.path)}
-                            className="p-1.5 rounded-lg hover:bg-[#333] text-slate-400 hover:text-sky-400 transition-colors"
+                            className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-[#333] text-slate-500 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors"
                             title="View / Edit in browser"
                           >
                             <FileEdit className="w-3.5 h-3.5" />
@@ -375,7 +375,7 @@ export const SftpExplorer: React.FC<SftpExplorerProps> = ({ server }) => {
                           <a
                             href={getSftpDownloadUrl(server.id, item.path)}
                             download
-                            className="p-1.5 rounded-lg hover:bg-[#333] text-slate-400 hover:text-emerald-400 transition-colors"
+                            className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-[#333] text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
                             title="Download file"
                           >
                             <Download className="w-3.5 h-3.5" />
@@ -386,7 +386,7 @@ export const SftpExplorer: React.FC<SftpExplorerProps> = ({ server }) => {
                       {/* Rename Button */}
                       <button
                         onClick={() => handleStartRename(item)}
-                        className="p-1.5 rounded-lg hover:bg-[#333] text-slate-400 hover:text-amber-400 transition-colors"
+                        className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-[#333] text-slate-500 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
                         title="Rename"
                       >
                         <Edit2 className="w-3.5 h-3.5" />
@@ -395,7 +395,7 @@ export const SftpExplorer: React.FC<SftpExplorerProps> = ({ server }) => {
                       {/* Delete Button */}
                       <button
                         onClick={() => handleDelete(item)}
-                        className="p-1.5 rounded-lg hover:bg-[#333] text-slate-400 hover:text-red-400 transition-colors"
+                        className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-[#333] text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
                         title="Delete"
                       >
                         <Trash2 className="w-3.5 h-3.5" />

@@ -111,16 +111,16 @@ export const EditServerModal: React.FC<EditServerModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="bg-[#181818] border border-[#2b2b2b] rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden">
+      <div className="bg-white dark:bg-[#181818] border border-slate-200 dark:border-[#2b2b2b] rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden transition-colors duration-200">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-[#2b2b2b] flex items-center justify-between">
+        <div className="px-6 py-4 border-b border-slate-200 dark:border-[#2b2b2b] flex items-center justify-between bg-slate-50 dark:bg-[#181818]">
           <div className="flex items-center gap-2">
-            <Edit3 className="w-5 h-5 text-sky-400" />
-            <h3 className="font-semibold text-slate-100 text-base">Edit Server Configuration</h3>
+            <Edit3 className="w-5 h-5 text-sky-600 dark:text-sky-400" />
+            <h3 className="font-semibold text-slate-900 dark:text-slate-100 text-base">Edit Server Configuration</h3>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-200 transition-colors p-1 rounded-lg hover:bg-zinc-800"
+            className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800"
           >
             <X className="w-5 h-5" />
           </button>
@@ -128,7 +128,7 @@ export const EditServerModal: React.FC<EditServerModalProps> = ({
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4 text-xs">
           {error && (
-            <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-400 flex items-start gap-2">
+            <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 flex items-start gap-2">
               <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
               <span>{error}</span>
             </div>
@@ -137,25 +137,25 @@ export const EditServerModal: React.FC<EditServerModalProps> = ({
           {/* Group Selector & Server Display Name */}
           <div className="grid grid-cols-3 gap-3">
             <div className="col-span-2">
-              <label className="block text-slate-300 font-medium mb-1">Server Display Name *</label>
+              <label className="block text-slate-700 dark:text-slate-300 font-medium mb-1">Server Display Name *</label>
               <input
                 type="text"
                 placeholder="e.g. Production Web-01"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full bg-[#1f1f1f] border border-zinc-800 rounded-lg px-3 py-2 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-sky-500"
+                className="w-full bg-slate-100 dark:bg-[#1f1f1f] border border-slate-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-sky-500"
                 required
               />
             </div>
             <div>
-              <label className="block text-slate-300 font-medium mb-1 flex items-center gap-1">
-                <Folder className="w-3 h-3 text-sky-400" />
+              <label className="block text-slate-700 dark:text-slate-300 font-medium mb-1 flex items-center gap-1">
+                <Folder className="w-3 h-3 text-sky-600 dark:text-sky-400" />
                 Group
               </label>
               <select
                 value={groupId || ''}
                 onChange={(e) => setGroupId(e.target.value || null)}
-                className="w-full bg-[#1f1f1f] border border-zinc-800 rounded-lg px-2.5 py-2 text-slate-200 focus:outline-none focus:border-sky-500"
+                className="w-full bg-slate-100 dark:bg-[#1f1f1f] border border-slate-200 dark:border-zinc-800 rounded-lg px-2.5 py-2 text-slate-900 dark:text-slate-200 focus:outline-none focus:border-sky-500"
               >
                 <option value="">None (Ungrouped)</option>
                 {groups.map((g) => (
@@ -170,23 +170,23 @@ export const EditServerModal: React.FC<EditServerModalProps> = ({
           {/* Host & Port */}
           <div className="grid grid-cols-3 gap-3">
             <div className="col-span-2">
-              <label className="block text-slate-300 font-medium mb-1">Host / IP Address *</label>
+              <label className="block text-slate-700 dark:text-slate-300 font-medium mb-1">Host / IP Address *</label>
               <input
                 type="text"
                 placeholder="192.168.1.100 or app.domain.com"
                 value={host}
                 onChange={(e) => setHost(e.target.value)}
-                className="w-full bg-[#1f1f1f] border border-zinc-800 rounded-lg px-3 py-2 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-sky-500"
+                className="w-full bg-slate-100 dark:bg-[#1f1f1f] border border-slate-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-sky-500"
                 required
               />
             </div>
             <div>
-              <label className="block text-slate-300 font-medium mb-1">SSH Port</label>
+              <label className="block text-slate-700 dark:text-slate-300 font-medium mb-1">SSH Port</label>
               <input
                 type="number"
                 value={port}
                 onChange={(e) => setPort(e.target.value)}
-                className="w-full bg-[#1f1f1f] border border-zinc-800 rounded-lg px-3 py-2 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-sky-500"
+                className="w-full bg-slate-100 dark:bg-[#1f1f1f] border border-slate-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-sky-500"
               />
             </div>
           </div>
@@ -194,26 +194,26 @@ export const EditServerModal: React.FC<EditServerModalProps> = ({
           {/* Username & Auth Type */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-slate-300 font-medium mb-1">SSH Username *</label>
+              <label className="block text-slate-700 dark:text-slate-300 font-medium mb-1">SSH Username *</label>
               <input
                 type="text"
                 placeholder="root"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full bg-[#1f1f1f] border border-zinc-800 rounded-lg px-3 py-2 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-sky-500"
+                className="w-full bg-slate-100 dark:bg-[#1f1f1f] border border-slate-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-sky-500"
                 required
               />
             </div>
             <div>
-              <label className="block text-slate-300 font-medium mb-1">Authentication Type</label>
-              <div className="grid grid-cols-2 gap-1 p-1 bg-[#1f1f1f] border border-zinc-800 rounded-lg">
+              <label className="block text-slate-700 dark:text-slate-300 font-medium mb-1">Authentication Type</label>
+              <div className="grid grid-cols-2 gap-1 p-1 bg-slate-100 dark:bg-[#1f1f1f] border border-slate-200 dark:border-zinc-800 rounded-lg">
                 <button
                   type="button"
                   onClick={() => setAuthType(AuthType.PASSWORD)}
                   className={`flex items-center justify-center gap-1 py-1 rounded text-[11px] font-medium transition-all ${
                     authType === AuthType.PASSWORD
                       ? 'bg-sky-600 text-white shadow'
-                      : 'text-slate-400 hover:text-slate-200'
+                      : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                   }`}
                 >
                   <Lock className="w-3 h-3" /> Password
@@ -224,7 +224,7 @@ export const EditServerModal: React.FC<EditServerModalProps> = ({
                   className={`flex items-center justify-center gap-1 py-1 rounded text-[11px] font-medium transition-all ${
                     authType === AuthType.PRIVATE_KEY
                       ? 'bg-sky-600 text-white shadow'
-                      : 'text-slate-400 hover:text-slate-200'
+                      : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                   }`}
                 >
                   <Key className="w-3 h-3" /> SSH Key
@@ -235,7 +235,7 @@ export const EditServerModal: React.FC<EditServerModalProps> = ({
 
           {/* Credential input */}
           <div>
-            <label className="block text-slate-300 font-medium mb-1">
+            <label className="block text-slate-700 dark:text-slate-300 font-medium mb-1">
               {authType === AuthType.PASSWORD
                 ? 'SSH Password (leave blank to keep existing)'
                 : 'PEM Private Key Content (leave blank to keep existing)'}
@@ -246,7 +246,7 @@ export const EditServerModal: React.FC<EditServerModalProps> = ({
                 placeholder="•••••••••••• (Unchanged)"
                 value={credential}
                 onChange={(e) => setCredential(e.target.value)}
-                className="w-full bg-[#1f1f1f] border border-zinc-800 rounded-lg px-3 py-2 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-sky-500 font-mono"
+                className="w-full bg-slate-100 dark:bg-[#1f1f1f] border border-slate-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-sky-500 font-mono"
               />
             ) : (
               <textarea
@@ -254,7 +254,7 @@ export const EditServerModal: React.FC<EditServerModalProps> = ({
                 placeholder="-----BEGIN OPENSSH PRIVATE KEY-----... (Unchanged)"
                 value={credential}
                 onChange={(e) => setCredential(e.target.value)}
-                className="w-full bg-[#1f1f1f] border border-zinc-800 rounded-lg p-3 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-sky-500 font-mono text-[11px]"
+                className="w-full bg-slate-100 dark:bg-[#1f1f1f] border border-slate-200 dark:border-zinc-800 rounded-lg p-3 text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-sky-500 font-mono text-[11px]"
               />
             )}
           </div>
@@ -264,26 +264,26 @@ export const EditServerModal: React.FC<EditServerModalProps> = ({
             <div
               className={`p-3 rounded-lg flex items-center gap-2 ${
                 testResult.success
-                  ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-400'
-                  : 'bg-rose-500/10 border border-rose-500/30 text-rose-400'
+                  ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400'
+                  : 'bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400'
               }`}
             >
               {testResult.success ? (
-                <CheckCircle2 className="w-4 h-4 flex-shrink-0 text-emerald-400" />
+                <CheckCircle2 className="w-4 h-4 flex-shrink-0 text-emerald-500 dark:text-emerald-400" />
               ) : (
-                <AlertTriangle className="w-4 h-4 flex-shrink-0 text-rose-400" />
+                <AlertTriangle className="w-4 h-4 flex-shrink-0 text-rose-500 dark:text-rose-400" />
               )}
               <span className="font-mono text-[11px]">{testResult.message}</span>
             </div>
           )}
 
           {/* Footer Actions */}
-          <div className="pt-4 border-t border-[#2b2b2b] flex items-center justify-between">
+          <div className="pt-4 border-t border-slate-200 dark:border-[#2b2b2b] flex items-center justify-between">
             <button
               type="button"
               onClick={handleTest}
               disabled={testing}
-              className="px-3 py-2 rounded-lg border border-zinc-700 hover:bg-zinc-800 text-slate-300 transition-colors flex items-center gap-1.5 font-medium disabled:opacity-50"
+              className="px-3 py-2 rounded-lg border border-slate-300 dark:border-zinc-700 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-700 dark:text-slate-300 transition-colors flex items-center gap-1.5 font-medium disabled:opacity-50"
             >
               {testing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
               Pre-flight Test
@@ -293,7 +293,7 @@ export const EditServerModal: React.FC<EditServerModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 rounded-lg border border-zinc-800 text-slate-400 hover:text-white transition-colors"
+                className="px-4 py-2 rounded-lg border border-slate-200 dark:border-zinc-800 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"
               >
                 Cancel
               </button>

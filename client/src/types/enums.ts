@@ -27,3 +27,10 @@ export enum TabType {
   SFTP = 'sftp',
   DESKTOP = 'desktop',
 }
+
+export enum ThemeMode {
+  LIGHT = 'light',
+  DARK = 'dark',
+  SYSTEM = 'system',
+}
+

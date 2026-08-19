@@ -62,16 +62,16 @@ export const SftpEditorModal: React.FC<SftpEditorModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-      <div className="bg-[#1e1e1e] border border-[#333] rounded-2xl w-full max-w-4xl h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+      <div className="bg-white dark:bg-[#1e1e1e] border border-slate-200 dark:border-[#333] rounded-2xl w-full max-w-4xl h-[85vh] flex flex-col shadow-2xl overflow-hidden transition-colors duration-200">
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[#2b2b2b] bg-[#181818]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-[#2b2b2b] bg-slate-100 dark:bg-[#181818]">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="p-2 rounded-xl bg-sky-500/10 text-sky-400 border border-sky-500/20">
+            <div className="p-2 rounded-xl bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20">
               <FileText className="w-5 h-5" />
             </div>
             <div className="truncate">
-              <h3 className="text-sm font-semibold text-slate-100 truncate">{fileName}</h3>
-              <p className="text-xs text-slate-400 font-mono truncate">{filePath}</p>
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{fileName}</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-mono truncate">{filePath}</p>
             </div>
           </div>
 
@@ -96,7 +96,7 @@ export const SftpEditorModal: React.FC<SftpEditorModalProps> = ({
 
             <button
               onClick={onClose}
-              className="p-2 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-[#2b2b2b] transition-colors"
+              className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-[#2b2b2b] transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -105,29 +105,29 @@ export const SftpEditorModal: React.FC<SftpEditorModalProps> = ({
 
         {/* Notifications Bar */}
         {error && (
-          <div className="bg-red-500/10 border-b border-red-500/20 px-6 py-2.5 flex items-center gap-2 text-xs text-red-400">
+          <div className="bg-red-500/10 border-b border-red-500/20 px-6 py-2.5 flex items-center gap-2 text-xs text-red-500 dark:text-red-400">
             <AlertCircle className="w-4 h-4 flex-shrink-0" />
             <span>{error}</span>
           </div>
         )}
         {successMessage && (
-          <div className="bg-emerald-500/10 border-b border-emerald-500/20 px-6 py-2.5 flex items-center gap-2 text-xs text-emerald-400">
+          <div className="bg-emerald-500/10 border-b border-emerald-500/20 px-6 py-2.5 flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400">
             <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
             <span>{successMessage}</span>
           </div>
         )}
 
         {/* Editor Body */}
-        <div className="flex-1 flex overflow-hidden bg-[#141414]">
+        <div className="flex-1 flex overflow-hidden bg-slate-50 dark:bg-[#141414]">
           {loading ? (
             <div className="flex-1 flex items-center justify-center text-slate-400 gap-2 text-xs">
-              <Loader2 className="w-5 h-5 animate-spin text-sky-400" />
+              <Loader2 className="w-5 h-5 animate-spin text-sky-600 dark:text-sky-400" />
               Loading file content over SFTP...
             </div>
           ) : (
-            <div className="flex-1 flex overflow-auto font-mono text-xs text-slate-200">
+            <div className="flex-1 flex overflow-auto font-mono text-xs text-slate-800 dark:text-slate-200">
               {/* Line Numbers */}
-              <div className="py-4 px-3 bg-[#181818] border-r border-[#2a2a2a] text-slate-600 text-right select-none min-w-[45px]">
+              <div className="py-4 px-3 bg-slate-200/60 dark:bg-[#181818] border-r border-slate-300 dark:border-[#2a2a2a] text-slate-400 dark:text-slate-600 text-right select-none min-w-[45px]">
                 {Array.from({ length: lineCount }).map((_, i) => (
                   <div key={i} className="leading-6">
                     {i + 1}
@@ -139,14 +139,14 @@ export const SftpEditorModal: React.FC<SftpEditorModalProps> = ({
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 spellCheck={false}
-                className="flex-1 p-4 bg-transparent text-slate-100 resize-none focus:outline-none leading-6 font-mono font-medium whitespace-pre"
+                className="flex-1 p-4 bg-transparent text-slate-900 dark:text-slate-100 resize-none focus:outline-none leading-6 font-mono font-medium whitespace-pre"
               />
             </div>
           )}
         </div>
 
         {/* Status Footer */}
-        <div className="px-6 py-2 bg-[#181818] border-t border-[#2b2b2b] flex items-center justify-between text-[11px] text-slate-400">
+        <div className="px-6 py-2 bg-slate-100 dark:bg-[#181818] border-t border-slate-200 dark:border-[#2b2b2b] flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
           <div>Lines: {lineCount}</div>
           <div className="font-mono">{filePath}</div>
         </div>

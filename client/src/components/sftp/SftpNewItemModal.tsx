@@ -52,41 +52,41 @@ export const SftpNewItemModal: React.FC<SftpNewItemModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-      <div className="bg-[#1e1e1e] border border-[#333] rounded-2xl w-full max-w-md p-6 shadow-2xl relative">
+      <div className="bg-white dark:bg-[#1e1e1e] border border-slate-200 dark:border-[#333] rounded-2xl w-full max-w-md p-6 shadow-2xl relative transition-colors duration-200">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-slate-400 hover:text-slate-200 p-1.5 rounded-lg hover:bg-[#2b2b2b]"
+          className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-[#2b2b2b]"
         >
           <X className="w-5 h-5" />
         </button>
 
         <div className="flex items-center gap-3 mb-6">
-          <div className="p-2.5 rounded-xl bg-sky-500/10 text-sky-400 border border-sky-500/20">
+          <div className="p-2.5 rounded-xl bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20">
             {type === 'folder' ? <FolderPlus className="w-5 h-5" /> : <FilePlus className="w-5 h-5" />}
           </div>
           <div>
-            <h3 className="text-base font-semibold text-slate-100">Create New Item</h3>
-            <p className="text-xs text-slate-400 font-mono truncate max-w-[280px]">Location: {currentPath}</p>
+            <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">Create New Item</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-mono truncate max-w-[280px]">Location: {currentPath}</p>
           </div>
         </div>
 
         {error && (
-          <div className="mb-4 bg-red-500/10 border border-red-500/20 px-3.5 py-2 rounded-xl text-xs text-red-400">
+          <div className="mb-4 bg-red-500/10 border border-red-500/20 px-3.5 py-2 rounded-xl text-xs text-red-500 dark:text-red-400">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-slate-400 mb-1.5">Item Type</label>
+            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">Item Type</label>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => setType('file')}
                 className={`flex items-center justify-center gap-2 p-2.5 rounded-xl text-xs font-semibold border transition-all ${
                   type === 'file'
-                    ? 'border-sky-500 bg-sky-500/10 text-sky-400'
-                    : 'border-[#333] bg-[#181818] text-slate-400 hover:text-slate-200'
+                    ? 'border-sky-500 bg-sky-500/10 text-sky-600 dark:text-sky-400'
+                    : 'border-slate-200 dark:border-[#333] bg-slate-100 dark:bg-[#181818] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                 }`}
               >
                 <FilePlus className="w-4 h-4" />
@@ -97,8 +97,8 @@ export const SftpNewItemModal: React.FC<SftpNewItemModalProps> = ({
                 onClick={() => setType('folder')}
                 className={`flex items-center justify-center gap-2 p-2.5 rounded-xl text-xs font-semibold border transition-all ${
                   type === 'folder'
-                    ? 'border-sky-500 bg-sky-500/10 text-sky-400'
-                    : 'border-[#333] bg-[#181818] text-slate-400 hover:text-slate-200'
+                    ? 'border-sky-500 bg-sky-500/10 text-sky-600 dark:text-sky-400'
+                    : 'border-slate-200 dark:border-[#333] bg-slate-100 dark:bg-[#181818] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                 }`}
               >
                 <FolderPlus className="w-4 h-4" />
@@ -108,7 +108,7 @@ export const SftpNewItemModal: React.FC<SftpNewItemModalProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-400 mb-1.5">
+            <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
               {type === 'folder' ? 'Folder Name' : 'File Name'}
             </label>
             <input
@@ -117,7 +117,7 @@ export const SftpNewItemModal: React.FC<SftpNewItemModalProps> = ({
               onChange={(e) => setItemName(e.target.value)}
               placeholder={type === 'folder' ? 'my-new-folder' : 'app.config.json'}
               required
-              className="w-full bg-[#141414] border border-[#333] rounded-xl px-3.5 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500 font-mono"
+              className="w-full bg-slate-100 dark:bg-[#141414] border border-slate-200 dark:border-[#333] rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-sky-500 font-mono"
               autoFocus
             />
           </div>
@@ -126,7 +126,7 @@ export const SftpNewItemModal: React.FC<SftpNewItemModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-medium text-slate-400 hover:text-slate-200 rounded-xl hover:bg-[#2b2b2b]"
+              className="px-4 py-2 text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 rounded-xl hover:bg-slate-100 dark:hover:bg-[#2b2b2b]"
             >
               Cancel
             </button>
