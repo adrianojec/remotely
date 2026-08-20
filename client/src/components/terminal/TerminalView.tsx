@@ -77,28 +77,47 @@ export const TerminalView: React.FC<TerminalViewProps> = ({ server }) => {
       xtermRef.current.reset();
     }
 
+    if (fitAddonRef.current && xtermRef.current) {
+      try {
+        fitAddonRef.current.fit();
+      } catch {
+        // Ignore if element is not rendered yet
+      }
+    }
+
+    const cols = xtermRef.current?.cols || 80;
+    const rows = xtermRef.current?.rows || 24;
+
     const envWsBase = import.meta.env.VITE_WS_BASE_URL;
     let wsUrl: string;
     if (envWsBase) {
-      wsUrl = `${envWsBase}/terminal?serverId=${server.id}&cols=80&rows=24`;
+      wsUrl = `${envWsBase}/terminal?serverId=${server.id}&cols=${cols}&rows=${rows}`;
     } else {
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
       const host = window.location.host;
-      wsUrl = `${protocol}//${host}/ws/terminal?serverId=${server.id}&cols=80&rows=24`;
+      wsUrl = `${protocol}//${host}/ws/terminal?serverId=${server.id}&cols=${cols}&rows=${rows}`;
     }
 
     setStatusText(`Connecting to ${server.name} (${server.host})...`);
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 
+    const sendResize = () => {
+      if (ws.readyState === WebSocket.OPEN && xtermRef.current && fitAddonRef.current) {
+        try {
+          fitAddonRef.current.fit();
+          const currentCols = xtermRef.current.cols;
+          const currentRows = xtermRef.current.rows;
+          ws.send(JSON.stringify({ type: 'resize', cols: currentCols, rows: currentRows }));
+        } catch {
+          // Ignore fit errors
+        }
+      }
+    };
+
     ws.onopen = () => {
       setConnected(true);
-      if (xtermRef.current && fitAddonRef.current) {
-        fitAddonRef.current.fit();
-        const cols = xtermRef.current.cols;
-        const rows = xtermRef.current.rows;
-        ws.send(JSON.stringify({ type: 'resize', cols, rows }));
-      }
+      sendResize();
     };
 
     ws.onmessage = (event) => {
@@ -109,6 +128,10 @@ export const TerminalView: React.FC<TerminalViewProps> = ({ server }) => {
         } else if (msg.type === 'status') {
           setStatusText(msg.data.trim());
           if (xtermRef.current) xtermRef.current.write(`\r\n\x1b[36m[Remotely] ${msg.data}\x1b[0m`);
+          // When backend confirms SSH session is ready, re-sync terminal size
+          if (typeof msg.data === 'string' && msg.data.includes('Connected to')) {
+            sendResize();
+          }
         } else if (msg.type === 'error') {
           setStatusText(`Error: ${msg.data.trim()}`);
           if (xtermRef.current) xtermRef.current.write(`\r\n\x1b[31m[Remotely Error] ${msg.data}\x1b[0m`);
@@ -153,7 +176,11 @@ export const TerminalView: React.FC<TerminalViewProps> = ({ server }) => {
     term.loadAddon(webLinksAddon);
 
     term.open(terminalRef.current);
-    fitAddon.fit();
+    try {
+      fitAddon.fit();
+    } catch {
+      // Ignore
+    }
 
     xtermRef.current = term;
     fitAddonRef.current = fitAddon;
@@ -166,24 +193,41 @@ export const TerminalView: React.FC<TerminalViewProps> = ({ server }) => {
 
     const handleResize = () => {
       if (fitAddonRef.current && xtermRef.current) {
-        fitAddonRef.current.fit();
-        if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-          wsRef.current.send(
-            JSON.stringify({
-              type: 'resize',
-              cols: xtermRef.current.cols,
-              rows: xtermRef.current.rows,
-            })
-          );
+        try {
+          fitAddonRef.current.fit();
+          if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+            wsRef.current.send(
+              JSON.stringify({
+                type: 'resize',
+                cols: xtermRef.current.cols,
+                rows: xtermRef.current.rows,
+              })
+            );
+          }
+        } catch {
+          // Ignore
         }
       }
     };
+
+    const container = terminalRef.current;
+    const resizeObserver = new ResizeObserver(() => {
+      handleResize();
+    });
+
+    if (container) {
+      resizeObserver.observe(container);
+    }
 
     window.addEventListener('resize', handleResize);
 
     connectWebSocket();
 
     return () => {
+      if (container) {
+        resizeObserver.unobserve(container);
+        resizeObserver.disconnect();
+      }
       window.removeEventListener('resize', handleResize);
       if (wsRef.current) wsRef.current.close();
       term.dispose();
@@ -204,7 +248,20 @@ export const TerminalView: React.FC<TerminalViewProps> = ({ server }) => {
 
   const handleFit = () => {
     if (fitAddonRef.current && xtermRef.current) {
-      fitAddonRef.current.fit();
+      try {
+        fitAddonRef.current.fit();
+        if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+          wsRef.current.send(
+            JSON.stringify({
+              type: 'resize',
+              cols: xtermRef.current.cols,
+              rows: xtermRef.current.rows,
+            })
+          );
+        }
+      } catch {
+        // Ignore
+      }
     }
   };
 

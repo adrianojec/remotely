@@ -9,10 +9,10 @@ export function handleTerminalWebSocket(wsContext: any, reqUrl: string) {
 
   const url = new URL(reqUrl, 'http://localhost');
   const serverId = url.searchParams.get('serverId');
-  const cols = parseInt(url.searchParams.get('cols') || '80', 10);
-  const rows = parseInt(url.searchParams.get('rows') || '24', 10);
+  let currentCols = parseInt(url.searchParams.get('cols') || '80', 10);
+  let currentRows = parseInt(url.searchParams.get('rows') || '24', 10);
 
-  console.log(`[WS Terminal] New connection request for serverId="${serverId}" (cols=${cols}, rows=${rows})`);
+  console.log(`[WS Terminal] New connection request for serverId="${serverId}" (cols=${currentCols}, rows=${currentRows})`);
 
   const safeSend = (data: object | string) => {
     try {
@@ -73,11 +73,11 @@ export function handleTerminalWebSocket(wsContext: any, reqUrl: string) {
   let stream: any = null;
 
   sshClient.on('ready', () => {
-    console.log(`[WS Terminal] SSH Connection READY for ${server.name}`);
+    console.log(`[WS Terminal] SSH Connection READY for ${server.name} (cols=${currentCols}, rows=${currentRows})`);
 
     safeSend({ type: 'status', data: `Connected to ${server.username}@${server.host}:${server.port}\r\n` });
 
-    sshClient.shell({ term: 'xterm-256color', cols, rows }, (err, ptyStream) => {
+    sshClient.shell({ term: 'xterm-256color', cols: currentCols, rows: currentRows }, (err, ptyStream) => {
       if (err) {
         console.error(`[WS Terminal] SSH PTY Shell Error: ${err.message}`);
 
@@ -89,6 +89,12 @@ export function handleTerminalWebSocket(wsContext: any, reqUrl: string) {
       }
 
       stream = ptyStream;
+
+      try {
+        stream.setWindow(currentRows, currentCols, 0, 0);
+      } catch {
+        // Ignore setWindow error if stream is not ready
+      }
 
       stream.on('data', (data: Buffer) => {
         safeSend({ type: 'output', data: data.toString('utf8') });
@@ -119,8 +125,18 @@ export function handleTerminalWebSocket(wsContext: any, reqUrl: string) {
 
         if (msg.type === 'input' && stream) {
           stream.write(msg.data);
-        } else if (msg.type === 'resize' && stream) {
-          stream.setWindow(msg.rows, msg.cols, 0, 0);
+        } else if (msg.type === 'resize') {
+          if (typeof msg.cols === 'number' && typeof msg.rows === 'number') {
+            currentCols = msg.cols;
+            currentRows = msg.rows;
+            if (stream) {
+              try {
+                stream.setWindow(currentRows, currentCols, 0, 0);
+              } catch {
+                // Ignore setWindow error if stream closed
+              }
+            }
+          }
         }
       } catch {
         // Raw text input fallback

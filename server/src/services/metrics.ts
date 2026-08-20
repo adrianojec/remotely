@@ -67,7 +67,7 @@ export async function fetchServerMetrics(creds: SshCredentials): Promise<ServerS
     'echo "---MEMINFO---"; cat /proc/meminfo 2>/dev/null',
     'echo "---DF---"; df -k -P',
     'echo "---NETDEV---"; cat /proc/net/dev 2>/dev/null',
-    'echo "---TOPPS---"; ps aux --sort=-%cpu 2>/dev/null | head -n 11 || ps aux | head -n 11',
+    'echo "---TOPPS---"; ps aux --sort=-%cpu 2>/dev/null | head -n 20 || ps aux | head -n 20',
     'echo "---STAT1---"; cat /proc/stat | grep "^cpu "',
     'sleep 0.2',
     'echo "---STAT2---"; cat /proc/stat | grep "^cpu "'
@@ -267,6 +267,15 @@ export async function fetchServerMetrics(creds: SshCredentials): Promise<ServerS
       const memPercent = parseFloat(parts[3]) || 0;
       const command = parts.slice(10).join(' ');
 
+      // Filter out self-monitoring / ephemeral metric collection commands
+      if (
+        command.includes('ps aux') ||
+        command.includes('head -n') ||
+        command.includes('---TOPPS---')
+      ) {
+        continue;
+      }
+
       topProcesses.push({
         pid,
         user,
@@ -285,7 +294,7 @@ export async function fetchServerMetrics(creds: SshCredentials): Promise<ServerS
     memory,
     disks,
     network,
-    topProcesses,
+    topProcesses: topProcesses.slice(0, 10),
     timestamp: new Date().toISOString(),
   };
 }
