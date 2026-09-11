@@ -103,7 +103,12 @@ export const TerminalView: React.FC<TerminalViewProps> = ({ server }) => {
     wsRef.current = ws;
 
     const sendResize = () => {
-      if (ws.readyState === WebSocket.OPEN && xtermRef.current && fitAddonRef.current) {
+      if (
+        ws.readyState === WebSocket.OPEN &&
+        xtermRef.current &&
+        fitAddonRef.current &&
+        terminalRef.current?.offsetParent !== null
+      ) {
         try {
           fitAddonRef.current.fit();
           const currentCols = xtermRef.current.cols;
@@ -192,7 +197,7 @@ export const TerminalView: React.FC<TerminalViewProps> = ({ server }) => {
     });
 
     const handleResize = () => {
-      if (fitAddonRef.current && xtermRef.current) {
+      if (fitAddonRef.current && xtermRef.current && terminalRef.current?.offsetParent !== null) {
         try {
           fitAddonRef.current.fit();
           if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {

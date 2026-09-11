@@ -21,6 +21,7 @@ export function App() {
   const [groups, setGroups] = useState<ServerGroup[]>([]);
   const [activeServer, setActiveServer] = useState<Server | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>(TabType.METRICS);
+  const [visitedTabs, setVisitedTabs] = useState<Set<TabType>>(new Set([TabType.METRICS]));
   const [loading, setLoading] = useState(true);
 
   // Modals state
@@ -53,6 +54,16 @@ export function App() {
   useEffect(() => {
     loadData();
   }, []);
+
+  useEffect(() => {
+    setVisitedTabs(new Set([activeTab]));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeServer?.id]);
+
+  const handleTabChange = (tab: TabType) => {
+    setActiveTab(tab);
+    setVisitedTabs((prev) => (prev.has(tab) ? prev : new Set(prev).add(tab)));
+  };
 
   const handleOpenAddServer = (groupId: string | null = null) => {
     setAddServerDefaultGroupId(groupId);
@@ -143,29 +154,39 @@ export function App() {
               {/* Tab Navigation */}
               <ServerTabs
                 activeTab={activeTab}
-                onTabChange={(t) => setActiveTab(t)}
+                onTabChange={handleTabChange}
               />
 
               {/* View Content */}
               <div className="flex-1 p-6 overflow-hidden">
-                {activeTab === TabType.METRICS && (
-                  <MetricsDashboardView key={activeServer.id} server={activeServer} />
+                {visitedTabs.has(TabType.METRICS) && (
+                  <div className={`h-full ${activeTab === TabType.METRICS ? '' : 'hidden'}`}>
+                    <MetricsDashboardView key={activeServer.id} server={activeServer} />
+                  </div>
                 )}
-                {activeTab === TabType.TERMINAL && (
-                  <TerminalView key={activeServer.id} server={activeServer} />
+                {visitedTabs.has(TabType.TERMINAL) && (
+                  <div className={`h-full ${activeTab === TabType.TERMINAL ? '' : 'hidden'}`}>
+                    <TerminalView key={activeServer.id} server={activeServer} />
+                  </div>
                 )}
-                {activeTab === TabType.CONTAINERS && (
-                  <ContainersTable key={activeServer.id} server={activeServer} />
+                {visitedTabs.has(TabType.CONTAINERS) && (
+                  <div className={`h-full ${activeTab === TabType.CONTAINERS ? '' : 'hidden'}`}>
+                    <ContainersTable key={activeServer.id} server={activeServer} />
+                  </div>
                 )}
-                {activeTab === TabType.SFTP && (
-                  <SftpExplorer key={activeServer.id} server={activeServer} />
+                {visitedTabs.has(TabType.SFTP) && (
+                  <div className={`h-full ${activeTab === TabType.SFTP ? '' : 'hidden'}`}>
+                    <SftpExplorer key={activeServer.id} server={activeServer} />
+                  </div>
                 )}
-                {activeTab === TabType.DESKTOP && (
-                  <RemoteDesktopView
-                    key={activeServer.id}
-                    server={activeServer}
-                    onServerUpdated={handleServerUpdated}
-                  />
+                {visitedTabs.has(TabType.DESKTOP) && (
+                  <div className={`h-full ${activeTab === TabType.DESKTOP ? '' : 'hidden'}`}>
+                    <RemoteDesktopView
+                      key={activeServer.id}
+                      server={activeServer}
+                      onServerUpdated={handleServerUpdated}
+                    />
+                  </div>
                 )}
               </div>
             </>
