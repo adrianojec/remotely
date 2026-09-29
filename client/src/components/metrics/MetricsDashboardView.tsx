@@ -24,7 +24,7 @@ export const MetricsDashboardView: React.FC<MetricsDashboardViewProps> = ({ serv
   const [metrics, setMetrics] = useState<ServerMetrics | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [refreshInterval, setRefreshInterval] = useState<number>(3000); // Default 3s
+  const [refreshInterval, setRefreshInterval] = useState<number>(0); // Default paused
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
 
   const isMountedRef = useRef<boolean>(true);
@@ -56,7 +56,7 @@ export const MetricsDashboardView: React.FC<MetricsDashboardViewProps> = ({ serv
     isMountedRef.current = true;
     loadMetrics(true);
 
-    let intervalId: NodeJS.Timeout | null = null;
+    let intervalId: ReturnType<typeof setInterval> | null = null;
     if (refreshInterval > 0) {
       intervalId = setInterval(() => {
         loadMetrics(false);
