@@ -224,7 +224,11 @@ export async function uploadSftpFile(serverId: string, targetPath: string, file:
     body: formData,
   });
 
-  const data = await res.json();
+  if (res.status === 413) {
+    throw new Error(`${file.name} is too large to upload`);
+  }
+
+  const data = await res.json().catch(() => ({}));
 
   if (!res.ok || !data.success) {
     throw new Error(data.message || 'Failed to upload file');

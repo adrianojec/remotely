@@ -16,7 +16,11 @@ import {
   Send,
   X,
   Radio,
+  Upload,
 } from 'lucide-react';
+
+// Number of blobs sent ahead of guacd acknowledgements during a file upload
+const UPLOAD_WINDOW_BLOBS = 64;
 
 interface RemoteDesktopViewProps {
   server: Server;
@@ -43,7 +47,14 @@ export const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ server, on
   const [clipboardText, setClipboardText] = useState<string>('');
   const [clipboardSentStatus, setClipboardSentStatus] = useState<string | null>(null);
 
+  // File upload state (RDP drive redirection)
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isDragOver, setIsDragOver] = useState<boolean>(false);
+  const [uploadProgress, setUploadProgress] = useState<{ name: string; percent: number } | null>(null);
+  const [uploadMessage, setUploadMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
   const currentProtocol = (server.rdp_protocol || RdpProtocol.RDP).toUpperCase();
+  const supportsUpload = (server.rdp_protocol || RdpProtocol.RDP) === RdpProtocol.RDP;
   const currentPort = server.rdp_port || (server.rdp_protocol === RdpProtocol.VNC ? DEFAULT_VNC_PORT : DEFAULT_RDP_PORT);
 
   // Helper to calculate WS URL
@@ -269,6 +280,91 @@ export const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ server, on
     }
   };
 
+  // Stream a file to the remote "Remotely" drive, keeping a window of blobs in flight
+  const uploadFileToRemote = (file: File) =>
+    new Promise<void>((resolve, reject) => {
+      const client = clientRef.current;
+      if (!client) return reject(new Error('Remote desktop is not connected'));
+
+      file.arrayBuffer().then((buffer) => {
+        const bytes = new Uint8Array(buffer);
+        const stream = client.createFileStream(file.type || 'application/octet-stream', file.name);
+        const writer = new Guacamole.ArrayBufferWriter(stream);
+        const blobLength: number = writer.blobLength;
+        const totalBlobs = Math.ceil(bytes.length / blobLength);
+
+        let opened = false;
+        let sent = 0;
+        let acked = 0;
+
+        const sendNext = () => {
+          while (sent < totalBlobs && sent - acked < UPLOAD_WINDOW_BLOBS) {
+            writer.sendData(bytes.subarray(sent * blobLength, (sent + 1) * blobLength));
+            sent++;
+          }
+        };
+
+        writer.onack = (status: any) => {
+          if (status.isError()) {
+            writer.onack = null;
+            return reject(new Error(status.message || `Upload of ${file.name} was rejected`));
+          }
+
+          if (!opened) opened = true;
+          else acked++;
+
+          setUploadProgress({ name: file.name, percent: totalBlobs ? Math.round((acked / totalBlobs) * 100) : 100 });
+
+          if (acked === totalBlobs) {
+            writer.onack = null;
+            writer.sendEnd();
+            return resolve();
+          }
+
+          sendNext();
+        };
+      }, reject);
+    });
+
+  const handleFileUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0 || uploadProgress) return;
+
+    setUploadMessage(null);
+    try {
+      for (let i = 0; i < files.length; i++) {
+        setUploadProgress({ name: files[i].name, percent: 0 });
+        await uploadFileToRemote(files[i]);
+      }
+      const label = files.length === 1 ? files[0].name : `${files.length} files`;
+      setUploadMessage({ type: 'success', text: `Uploaded ${label} to the "Remotely" drive` });
+    } catch (err: any) {
+      setUploadMessage({ type: 'error', text: err.message || 'Failed to upload file(s)' });
+    } finally {
+      setUploadProgress(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      setTimeout(() => setUploadMessage(null), 5000);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    if (!supportsUpload || connectionState !== 'CONNECTED') return;
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    if (supportsUpload && connectionState === 'CONNECTED') {
+      handleFileUpload(e.dataTransfer.files);
+    }
+  };
+
   return (
     <div className="flex flex-col h-full w-full bg-slate-100 dark:bg-[#121212] overflow-hidden rounded-xl border border-slate-200 dark:border-[#2b2b2b] relative transition-colors duration-200">
       {/* Top Controls Toolbar */}
@@ -355,6 +451,28 @@ export const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ server, on
             <span>Ctrl+Alt+Del</span>
           </button>
 
+          {/* Upload Files to Remote Drive */}
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={(e) => handleFileUpload(e.target.files)}
+            className="hidden"
+            multiple
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={!supportsUpload || connectionState !== 'CONNECTED' || !!uploadProgress}
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-200/80 hover:bg-slate-300/80 dark:bg-[#222] dark:hover:bg-[#2e2e2e] border border-slate-300/80 dark:border-[#333] text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all text-xs disabled:opacity-40"
+            title={supportsUpload ? 'Upload files to the "Remotely" drive on the remote machine' : 'File upload is only available for RDP connections'}
+          >
+            {uploadProgress ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-sky-600 dark:text-sky-400" />
+            ) : (
+              <Upload className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+            )}
+            <span>Upload</span>
+          </button>
+
           {/* Remote Clipboard Toggle */}
           <button
             onClick={() => setIsClipboardOpen(!isClipboardOpen)}
@@ -398,7 +516,12 @@ export const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ server, on
       </div>
 
       {/* Main Canvas Viewport Area */}
-      <div className="flex-1 relative overflow-auto bg-[#0a0a0a] flex items-center justify-center p-2">
+      <div
+        className="flex-1 relative overflow-auto bg-[#0a0a0a] flex items-center justify-center p-2"
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
         {/* Guacamole Client Element Container */}
         <div ref={containerRef} className="w-full h-full flex items-center justify-center overflow-hidden" />
 
@@ -455,6 +578,41 @@ export const RemoteDesktopView: React.FC<RemoteDesktopViewProps> = ({ server, on
                 Retry Connection
               </button>
             </div>
+          </div>
+        )}
+
+        {/* Drag & Drop Upload Overlay */}
+        {isDragOver && (
+          <div className="absolute inset-0 bg-sky-500/10 border-2 border-dashed border-sky-500 rounded-xl flex flex-col items-center justify-center text-sky-400 z-30 pointer-events-none">
+            <Upload className="w-12 h-12 mb-3 animate-bounce" />
+            <p className="text-sm font-semibold">Drop files to upload to the "Remotely" drive</p>
+          </div>
+        )}
+
+        {/* Upload Progress / Result Toast */}
+        {(uploadProgress || uploadMessage) && (
+          <div className="absolute left-4 bottom-4 w-80 bg-[#1e1e1e] border border-[#333] rounded-2xl p-3 shadow-2xl z-30 text-xs">
+            {uploadProgress ? (
+              <>
+                <div className="flex items-center justify-between gap-2 text-slate-200 mb-2">
+                  <span className="truncate font-medium">{uploadProgress.name}</span>
+                  <span className="font-mono text-slate-400">{uploadProgress.percent}%</span>
+                </div>
+                <div className="h-1.5 bg-[#333] rounded-full overflow-hidden">
+                  <div className="h-full bg-sky-500 transition-all" style={{ width: `${uploadProgress.percent}%` }} />
+                </div>
+              </>
+            ) : uploadMessage?.type === 'success' ? (
+              <div className="flex items-center gap-1.5 text-emerald-400">
+                <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                <span>{uploadMessage.text}</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 text-red-400">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                <span>{uploadMessage?.text}</span>
+              </div>
+            )}
           </div>
         )}
 

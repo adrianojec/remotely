@@ -13,6 +13,7 @@ export interface GuacConnectionOptions {
   width?: number;
   height?: number;
   dpi?: number;
+  drivePath?: string;
 }
 
 /**
@@ -222,6 +223,13 @@ export function connectGuacd(
               return 'true';
             case 'enable-menu-animations':
               return 'true';
+            case 'enable-drive':
+            case 'create-drive-path':
+              return options.drivePath ? 'true' : 'false';
+            case 'drive-name':
+              return 'Remotely';
+            case 'drive-path':
+              return options.drivePath || '';
             default:
               return '';
           }
