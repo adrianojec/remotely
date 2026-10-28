@@ -90,8 +90,8 @@ export function handleDesktopWebSocket(wsContext: any, reqUrl: string) {
       width,
       height,
       dpi,
-      // Per-server folder inside the guacd container, exposed to RDP sessions as a network drive for file uploads
-      drivePath: protocol === RdpProtocol.RDP ? `/home/guacd/drive/${server.id}` : undefined,
+      // Per-server folder inside the guacd container (guacd only creates the last path segment, so its parent must exist), exposed to RDP sessions as a network drive for file uploads
+      drivePath: protocol === RdpProtocol.RDP ? `/home/guacd/drive-${server.id}` : undefined,
     },
     wsContext,
     reqUrl
